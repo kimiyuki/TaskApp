@@ -1,7 +1,12 @@
 package shirai.kimiyuki.techacademy.jp.taskapp
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log
 import android.view.Menu
@@ -17,6 +22,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.io.Serializable
 import java.util.*
 
+const val EXTRA_TASK = "jp.techacademy.shirai.kimiyuki.taskapp.TASK"
+
 class MainActivity : AppCompatActivity() {
     private lateinit var mRealm: Realm
     private val mRealmListener = object : RealmChangeListener<Realm>{
@@ -31,8 +38,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            val intent = Intent(this@MainActivity, InputActivity::class.java)
+            startActivity(intent)
         }
 
         //Realm
@@ -43,14 +50,43 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter = TaskAdapter(this@MainActivity)
 
         listView1.setOnItemClickListener { parent, view, position, id ->
-            //TODO move to another activity
+            val task = parent.adapter.getItem(position) as Task
+            val intent = Intent(this@MainActivity, InputActivity::class.java)
+            intent.putExtra(EXTRA_TASK, task.id)
+            startActivity(intent)
         }
-        listView1.setOnItemLongClickListener { parent, view, position, id ->
-            //TODO delete the task
-            Log.d("hello", "delete the task")
-            true}
 
-        addTaskForTest()
+        listView1.setOnItemLongClickListener { parent, view, position, id ->
+            val task = parent.adapter.getItem(position) as Task
+            val builder = AlertDialog.Builder(this@MainActivity)
+            builder.setTitle("削除")
+            builder.setMessage(task.title + "を削除しますか")
+            builder.setPositiveButton("OK"){_, _ ->
+                val results = mRealm.where(Task::class.java).equalTo("id", task.id).findAll()
+                mRealm.beginTransaction()
+                results.deleteAllFromRealm()
+                mRealm.commitTransaction()
+
+                val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
+                val resultPendingIntent = PendingIntent.getBroadcast(
+                    this@MainActivity,
+                    task.id,
+                    resultIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+                val alarmManager = getSystemService( Context.ALARM_SERVICE) as AlarmManager
+                alarmManager.cancel(resultPendingIntent)
+
+                reloadListView()
+            }
+            builder.setNegativeButton("CANCEL", null)
+            val dialog = builder.create()
+            dialog.show()
+
+            Log.d("hello", "delete the task")
+            true
+            }
+
         reloadListView()
     }
 
