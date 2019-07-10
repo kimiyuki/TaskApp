@@ -9,6 +9,7 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -17,6 +18,7 @@ import io.realm.*
 import io.realm.annotations.PrimaryKey
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
 import java.io.Serializable
 import java.util.*
 
@@ -47,6 +49,9 @@ class MainActivity : AppCompatActivity() {
         //listView
         mTaskAdapter = TaskAdapter(this@MainActivity)
 
+        addTaskForTest()
+        reloadListView(null)
+
         listView1.setOnItemClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
             val intent = Intent(this@MainActivity, InputActivity::class.java)
@@ -55,6 +60,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         searchBox.setOnKeyListener{ v, keyCode, keyEvent ->
+            if ((keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) ||
+                (keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK)
+            ){
+                Log.d("hello", "enter")
+                reloadListView(v.searchBox.text.toString())
+            }
             Log.d("hello", "world")
             return@setOnKeyListener true
         }
@@ -90,13 +101,14 @@ class MainActivity : AppCompatActivity() {
             true
             }
 
-        reloadListView(null)
     }
 
     private fun reloadListView(query:String?){
-        val taskRealmResults = mRealm.where(Task::class.java).findAll().sort(
-            "date", Sort.DESCENDING
-        )
+        val taskRealmResults = if(query != null) {
+            mRealm.where(Task::class.java) .contains("category", query).findAll().sort( "date", Sort.DESCENDING )
+        }else{
+            mRealm.where(Task::class.java).findAll().sort( "date", Sort.DESCENDING )
+        }
         mTaskAdapter.taskList = mRealm.copyFromRealm(taskRealmResults)
         listView1.adapter = mTaskAdapter
         mTaskAdapter.notifyDataSetChanged()
@@ -108,21 +120,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addTaskForTest(){
-        val task = Task()
-        task.title = "作業"
-        task.contents = "プログラムを書いてpushする"
-        task.date = Date()
-        task.category = "etc"
-        task.id = 0
-        val task2 = Task()
-        task2.title = "作業"
-        task2.contents = "プログラムを書いてpushする2"
-        task2.date = Date()
-        task2.id = 1
-        task2.category = "book"
         mRealm.beginTransaction()
-        mRealm.copyToRealmOrUpdate(task)
-        mRealm.copyToRealmOrUpdate(task2)
+        val lst = listOf("book", "sport", "study")
+
+        for(i in 0..20){
+            val task = Task()
+            task.title = "作業" + i.toString()
+            task.contents = "プログラムを書いてpushする"
+            task.date = Date()
+            task.category = lst.shuffled().take(1)[0]
+            task.id = i
+            mRealm.copyToRealmOrUpdate(task)
+        }
         mRealm.commitTransaction()
     }
 
