@@ -83,9 +83,7 @@ class InputActivity : AppCompatActivity() {
         val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
         resultIntent.putExtra(EXTRA_TASK, mTask!!.id)
         val resultPendingIntent = PendingIntent.getBroadcast(
-            this,
-            mTask!!.id,
-            resultIntent,
+            this, mTask!!.id, resultIntent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager

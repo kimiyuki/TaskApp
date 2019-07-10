@@ -11,11 +11,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.ListView
-import io.realm.Realm
-import io.realm.RealmChangeListener
-import io.realm.RealmObject
-import io.realm.Sort
+import io.realm.*
 import io.realm.annotations.PrimaryKey
 
 import kotlinx.android.synthetic.main.activity_main.*
@@ -28,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mRealm: Realm
     private val mRealmListener = object : RealmChangeListener<Realm>{
         override fun onChange(t: Realm) {
-            reloadListView()
+            reloadListView(null)
         }
     }
     private lateinit var mTaskAdapter: TaskAdapter
@@ -56,6 +54,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        searchBox.setOnKeyListener{ v, keyCode, keyEvent ->
+            Log.d("hello", "world")
+            return@setOnKeyListener true
+        }
+
         listView1.setOnItemLongClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
             val builder = AlertDialog.Builder(this@MainActivity)
@@ -77,7 +80,7 @@ class MainActivity : AppCompatActivity() {
                 val alarmManager = getSystemService( Context.ALARM_SERVICE) as AlarmManager
                 alarmManager.cancel(resultPendingIntent)
 
-                reloadListView()
+                reloadListView(null)
             }
             builder.setNegativeButton("CANCEL", null)
             val dialog = builder.create()
@@ -87,10 +90,10 @@ class MainActivity : AppCompatActivity() {
             true
             }
 
-        reloadListView()
+        reloadListView(null)
     }
 
-    private fun reloadListView(){
+    private fun reloadListView(query:String?){
         val taskRealmResults = mRealm.where(Task::class.java).findAll().sort(
             "date", Sort.DESCENDING
         )
@@ -109,12 +112,14 @@ class MainActivity : AppCompatActivity() {
         task.title = "作業"
         task.contents = "プログラムを書いてpushする"
         task.date = Date()
+        task.category = "etc"
         task.id = 0
         val task2 = Task()
         task2.title = "作業"
         task2.contents = "プログラムを書いてpushする2"
         task2.date = Date()
         task2.id = 1
+        task2.category = "book"
         mRealm.beginTransaction()
         mRealm.copyToRealmOrUpdate(task)
         mRealm.copyToRealmOrUpdate(task2)
@@ -128,6 +133,7 @@ open class Task: RealmObject(), Serializable{
     var title: String = ""
     var contents: String = ""
     var date: Date = Date()
+    var category: String = ""
 
     @PrimaryKey
     var id:Int = 0
