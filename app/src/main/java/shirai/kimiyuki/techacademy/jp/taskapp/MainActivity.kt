@@ -37,11 +37,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        fab.setOnClickListener { view ->
-            val intent = Intent(this@MainActivity, InputActivity::class.java)
-            startActivity(intent)
-        }
-
         //Realm
         mRealm = Realm.getDefaultInstance()
         mRealm.addChangeListener(mRealmListener)
@@ -49,8 +44,36 @@ class MainActivity : AppCompatActivity() {
         //listView
         mTaskAdapter = TaskAdapter(this@MainActivity)
 
+        //show data
         addTaskForTest()
         reloadListView(null)
+
+        _setListeners()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if(!mRealm.isClosed) mRealm.close()
+    }
+
+    private fun _setListeners(){
+        //listeners
+        fab.setOnClickListener { view ->
+            val intent = Intent(this@MainActivity, InputActivity::class.java)
+            startActivity(intent)
+        }
+
+        searchBox.setOnKeyListener{ v, keyCode, keyEvent ->
+            Log.d("helloKey", keyEvent.action.toString())
+            //if (keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER ){
+            if (keyEvent.action == KeyEvent.ACTION_DOWN){
+                Log.d("hello", "enter")
+                //reloadListView(v.searchBox.text.toString())
+            }
+            reloadListView(v.searchBox.text.toString())
+            Log.d("hello", "world")
+            return@setOnKeyListener true
+        }
 
         listView1.setOnItemClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
@@ -59,16 +82,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        searchBox.setOnKeyListener{ v, keyCode, keyEvent ->
-            if ((keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) ||
-                (keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK)
-            ){
-                Log.d("hello", "enter")
-                reloadListView(v.searchBox.text.toString())
-            }
-            Log.d("hello", "world")
-            return@setOnKeyListener true
-        }
 
         listView1.setOnItemLongClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
@@ -99,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
             Log.d("hello", "delete the task")
             true
-            }
+        }
 
     }
 
@@ -114,10 +127,6 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter.notifyDataSetChanged()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        mRealm.close()
-    }
 
     private fun addTaskForTest(){
         mRealm.beginTransaction()

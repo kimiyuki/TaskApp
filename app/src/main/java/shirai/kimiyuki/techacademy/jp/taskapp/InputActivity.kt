@@ -23,73 +23,6 @@ class InputActivity : AppCompatActivity() {
     private var mMinute = 0
     private var mTask: Task? = null
 
-
-    private val mOnDateClickListener = View.OnClickListener {
-        val datePickerDialog = DatePickerDialog(this,
-            DatePickerDialog.OnDateSetListener{
-                _, year, month, dateOfWeek ->
-                mYear = year; mMonth = month; mDay = dateOfWeek
-                val dateString = mYear.toString() + "/" + String.format("%2d", mMonth+1) + "/" + String.format("%2d", mDay)
-                date_button.text  = dateString
-            }, mYear,mMonth,mDay)
-        datePickerDialog.show()
-    }
-
-    private val mOnTimeClickListener = View.OnClickListener {
-        val timePickerDialog = TimePickerDialog(this,
-            TimePickerDialog.OnTimeSetListener{
-                   _, hour, minutes ->
-                mHour = hour; mMinute = minutes
-                val timeString = mHour.toString() + ":" + String.format("%2d", mMinute)
-                times_button.text = timeString
-            }, mHour, mMinute, false)
-        timePickerDialog.show()
-    }
-
-    private val mOnDoneClickListener = View.OnClickListener {
-        addTask()
-        finish()
-    }
-
-    private fun addTask(){
-        val realm = Realm.getDefaultInstance()
-        realm.beginTransaction()
-
-        if(mTask == null){
-            mTask = Task()
-            val taskRealmResults = realm.where(Task::class.java).findAll()
-            val identifier: Int =
-                if(taskRealmResults.max("id") != null){
-                    taskRealmResults.max("id")!!.toInt() + 1
-                }else {
-                    0
-                }
-            mTask!!.id = identifier
-        }
-
-        val title = title_edit_text.text.toString()
-        val content = content_edit_text.text.toString()
-
-        mTask!!.title = title
-        mTask!!.contents = content
-        val calendar = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
-        val date = calendar.time
-        mTask!!.date = date
-
-        realm.copyToRealmOrUpdate(mTask!!)
-        realm.commitTransaction()
-        realm.close()
-
-        val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
-        resultIntent.putExtra(EXTRA_TASK, mTask!!.id)
-        val resultPendingIntent = PendingIntent.getBroadcast(
-            this, mTask!!.id, resultIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, resultPendingIntent)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_input)
@@ -139,4 +72,78 @@ class InputActivity : AppCompatActivity() {
             times_button.text = timeString
         }
     }
+
+
+    private val mOnDateClickListener = View.OnClickListener {
+        val datePickerDialog = DatePickerDialog(this,
+            DatePickerDialog.OnDateSetListener{
+                _, year, month, dateOfWeek ->
+                mYear = year; mMonth = month; mDay = dateOfWeek
+                val dateString = mYear.toString() + "/" + String.format("%2d", mMonth+1) + "/" + String.format("%2d", mDay)
+                date_button.text  = dateString
+            }, mYear,mMonth,mDay)
+        datePickerDialog.show()
+    }
+
+    private val mOnTimeClickListener = View.OnClickListener {
+        val timePickerDialog = TimePickerDialog(this,
+            TimePickerDialog.OnTimeSetListener{
+                   _, hour, minutes ->
+                mHour = hour; mMinute = minutes
+                val timeString = mHour.toString() + ":" + String.format("%2d", mMinute)
+                times_button.text = timeString
+            }, mHour, mMinute, false)
+        timePickerDialog.show()
+    }
+
+    private val mOnDoneClickListener = View.OnClickListener {
+        addTask()
+        finish()
+    }
+
+    private fun addTask(){
+        val realm = Realm.getDefaultInstance()
+        val calendar = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
+        realm.executeTransaction {
+            //realm.beginTransaction()
+            if (mTask == null) {
+                mTask = Task()
+                val taskRealmResults = realm.where(Task::class.java).findAll()
+                val identifier: Int =
+                    if (taskRealmResults.max("id") != null) {
+                        taskRealmResults.max("id")!!.toInt() + 1
+                    } else {
+                        0
+                    }
+                mTask!!.id = identifier
+            }
+
+            val title = title_edit_text.text.toString()
+            val content = content_edit_text.text.toString()
+
+            mTask!!.title = title
+            mTask!!.contents = content
+            val date = calendar.time
+            mTask!!.date = date
+
+            realm.copyToRealmOrUpdate(mTask!!)
+            //realm.commitTransaction()
+        }
+        realm.close()
+        //TODO: cancelTransactionになった場合に、setAlarmを実行したくない。
+        //try catchでは、executeTransaction内の例外は処理済みにされてしまう？
+        setAlarm(calendar, mTask!!.id)
+    }
+
+    private fun setAlarm(calendar: GregorianCalendar, taskId:Int) {
+        val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
+        resultIntent.putExtra(EXTRA_TASK, taskId)
+        val resultPendingIntent = PendingIntent.getBroadcast(
+            this, taskId, resultIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, resultPendingIntent)
+    }
+
 }
