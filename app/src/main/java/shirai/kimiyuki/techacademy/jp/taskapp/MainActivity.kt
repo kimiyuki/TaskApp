@@ -8,11 +8,14 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.ListView
 import io.realm.*
 import io.realm.annotations.PrimaryKey
@@ -24,6 +27,16 @@ import java.util.*
 
 const val EXTRA_TASK = "jp.techacademy.shirai.kimiyuki.taskapp.TASK"
 
+fun EditText.afterTextChanged(callback: (String) -> Unit) {
+    this.addTextChangedListener(object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        override fun afterTextChanged(editable: Editable?) {
+            callback.invoke(editable.toString())
+        }
+    })
+}
+
 class MainActivity : AppCompatActivity() {
     private lateinit var mRealm: Realm
     private val mRealmListener = object : RealmChangeListener<Realm>{
@@ -32,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private lateinit var mTaskAdapter: TaskAdapter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,18 +76,22 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this@MainActivity, InputActivity::class.java)
             startActivity(intent)
         }
-
-        searchBox.setOnKeyListener{ v, keyCode, keyEvent ->
-            Log.d("helloKey", keyEvent.action.toString())
-            //if (keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER ){
-            if (keyEvent.action == KeyEvent.ACTION_DOWN){
-                Log.d("hello", "enter")
-                //reloadListView(v.searchBox.text.toString())
-            }
-            reloadListView(v.searchBox.text.toString())
-            Log.d("hello", "world")
-            return@setOnKeyListener true
+        searchBox.afterTextChanged { text ->
+            reloadListView(text)
+            Log.d("hello", text)
         }
+
+//        searchBox.setOnKeyListener{ v, keyCode, keyEvent ->
+//            Log.d("helloKey", keyEvent.action.toString())
+//            //if (keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER ){
+//            if (keyEvent.action == KeyEvent.ACTION_DOWN){
+//                Log.d("hello", "enter")
+//                //reloadListView(v.searchBox.text.toString())
+//            }
+//            reloadListView(v.searchBox.text.toString())
+//            Log.d("hello", "world")
+//            return@setOnKeyListener true
+//        }
 
         listView1.setOnItemClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
