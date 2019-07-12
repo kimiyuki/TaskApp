@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
 
         for(i in 0..20){
             val task = Task()
-            task.title = "作業" + i.toString()
+            task.title = "今日の作業から明日の作業" + i.toString()
             task.contents = "プログラムを書いてpushする"
             task.date = Date()
             task.category = lst.shuffled().take(1)[0]
