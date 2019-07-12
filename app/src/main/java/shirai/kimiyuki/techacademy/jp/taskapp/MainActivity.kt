@@ -81,18 +81,6 @@ class MainActivity : AppCompatActivity() {
             Log.d("hello", text)
         }
 
-//        searchBox.setOnKeyListener{ v, keyCode, keyEvent ->
-//            Log.d("helloKey", keyEvent.action.toString())
-//            //if (keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER ){
-//            if (keyEvent.action == KeyEvent.ACTION_DOWN){
-//                Log.d("hello", "enter")
-//                //reloadListView(v.searchBox.text.toString())
-//            }
-//            reloadListView(v.searchBox.text.toString())
-//            Log.d("hello", "world")
-//            return@setOnKeyListener true
-//        }
-
         listView1.setOnItemClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
             val intent = Intent(this@MainActivity, InputActivity::class.java)
@@ -148,7 +136,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun addTaskForTest(){
         mRealm.beginTransaction()
-        val lst = listOf("book", "sport", "study")
+        val lst = listOf("book", "sport", "party")
 
         for(i in 0..20){
             val task = Task()
