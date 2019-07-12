@@ -84,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         listView1.setOnItemClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
             val intent = Intent(this@MainActivity, InputActivity::class.java)
+            Log.d("hello_task", "${task.id}" )
             intent.putExtra(EXTRA_TASK, task.id)
             startActivity(intent)
         }

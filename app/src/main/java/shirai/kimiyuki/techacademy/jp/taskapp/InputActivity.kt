@@ -40,7 +40,7 @@ class InputActivity : AppCompatActivity() {
         done_button.setOnClickListener(mOnDoneClickListener)
 
         //EXTRA_task
-        val intent = Intent()
+        val intent = getIntent()
         val taskId = intent.getIntExtra(EXTRA_TASK, -1)
         val realm = Realm.getDefaultInstance()
         mTask = realm.where(Task::class.java).equalTo("id", taskId).findFirst()
@@ -56,6 +56,7 @@ class InputActivity : AppCompatActivity() {
         }else{
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
+            category_edit_text.setText(mTask!!.category)
 
             val calendar = Calendar.getInstance()
             calendar.time = mTask!!.date
