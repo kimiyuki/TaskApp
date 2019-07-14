@@ -56,7 +56,7 @@ class InputActivity : AppCompatActivity() {
         }else{
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
-            category_edit_text.setText(mTask!!.category)
+            category_edit_text.setText(mTask!!.category?.name?.toString())
 
             val calendar = Calendar.getInstance()
             calendar.time = mTask!!.date

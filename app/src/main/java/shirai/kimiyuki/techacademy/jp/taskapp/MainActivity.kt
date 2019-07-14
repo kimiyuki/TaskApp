@@ -5,23 +5,18 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
 import android.widget.EditText
-import android.widget.ListView
+import android.widget.Toast
 import io.realm.*
 import io.realm.annotations.PrimaryKey
 
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
+import kotlinx.android.synthetic.main.row.*
 import java.io.Serializable
 import java.util.*
 
@@ -76,6 +71,9 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this@MainActivity, InputActivity::class.java)
             startActivity(intent)
         }
+//        text3.setOnClickListener {_ ->
+//            Log.d("hello", "aaaaa")
+//        }
         searchBox.afterTextChanged { text ->
             reloadListView(text)
             Log.d("hello", text)
@@ -125,7 +123,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun reloadListView(query:String?){
         val taskRealmResults = if(query != null) {
-            mRealm.where(Task::class.java) .contains("category", query).findAll().sort( "date", Sort.DESCENDING )
+//            val categories = mRealm.where(Category::class.java)
+//                .contains("name",query).findAll()
+            mRealm.where(Task::class.java)
+                //.`in`("category", categories.map { it.id }.toTypedArray())
+                .contains("category.name", query)
+                .findAll().sort( "date", Sort.DESCENDING )
         }else{
             mRealm.where(Task::class.java).findAll().sort( "date", Sort.DESCENDING )
         }
@@ -136,16 +139,23 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun addTaskForTest(){
+        val str_categories:List<String> = listOf("sport", "book", "play")
         mRealm.beginTransaction()
-        val lst = listOf("book", "sport", "party")
+        for(i in 0..2){
+            val category = Category()
+            category.id = i
+            category.name = str_categories[i]
+            mRealm.copyToRealmOrUpdate(category)
+        }
 
+        val categories = mRealm.where(Category::class.java).findAll()
         for(i in 0..20){
             val task = Task()
             task.title = "今日の作業から明日の作業" + i.toString()
             task.contents = "プログラムを書いてpushする"
             task.date = Date()
-            task.category = lst.shuffled().take(1)[0]
             task.id = i
+            task.category =  categories.shuffled().take(1)[0]
             mRealm.copyToRealmOrUpdate(task)
         }
         mRealm.commitTransaction()
@@ -158,16 +168,19 @@ open class Task: RealmObject(), Serializable{
     var title: String = ""
     var contents: String = ""
     var date: Date = Date()
-    var category: String = ""
+    //category: Category = Category()は、cannot be @Required or @NotNullになる。
+    var category: Category? = null
 
     @PrimaryKey
     var id:Int = 0
 
 }
 
-class Category {
+open class Category: RealmObject(), Serializable {
     var name: String = ""
-    var id: Int = 0
+    @PrimaryKey
+    var id:Int = 0
+}
     /*
         上記のString型のcategoryを、クラスのCategoryへ変更してください
         追加で、タスク作成画面から遷移する画面を1つ作成してください
@@ -175,4 +188,3 @@ class Category {
         タスク作成画面でTaskを作成するときにCategoryを選択できるようにしてください
         一覧画面でCategoryを選択すると、Categoryに属しているタスクのみ表示されるようにしてください
      */
-}

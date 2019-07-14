@@ -12,7 +12,7 @@
                                              android:layout_marginBottom="4dp"
                                              android:id="@+id/litView1row">
 
-    <TextView android:layout_width="150dp" android:layout_height="wrap_content"
+    <TextView android:layout_width="250dp" android:layout_height="wrap_content"
               android:id="@+id/text1"
               app:layout_constraintStart_toStartOf="parent"
               app:layout_constraintTop_toTopOf="parent"
@@ -34,7 +34,7 @@
               app:layout_constrainedWidth="false"
               android:paddingLeft="4dp"
               android:paddingRight="4dp"
-              app:layout_constraintStart_toEndOf="@+id/text1" android:layout_marginStart="8dp"/>
+              app:layout_constraintEnd_toStartOf="@+id/text3" android:layout_marginStart="8dp"/>
 
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
               android:id="@+id/text3"

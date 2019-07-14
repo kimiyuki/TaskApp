@@ -1,6 +1,7 @@
 package shirai.kimiyuki.techacademy.jp.taskapp
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,12 +21,15 @@ class TaskAdapter(context: Context) : BaseAdapter() {
         textView1.text = taskList[position].title
 
         val textView2 = view.findViewById<TextView>(R.id.text2)
-        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm",Locale.JAPANESE)
+        val simpleDateFormat = SimpleDateFormat("MM-dd HH:mm",Locale.JAPANESE)
         val date = taskList[position].date
         textView2.text = simpleDateFormat.format(date)
 
         val textView3 = view.findViewById<TextView>(R.id.text3)
-        textView3.text = taskList[position].category
+        textView3.text = taskList[position].category?.name?.toString()
+        textView3.setOnClickListener { v ->
+            Log.d("hello", "aaaaaa")
+        }
 
         return view
     }
