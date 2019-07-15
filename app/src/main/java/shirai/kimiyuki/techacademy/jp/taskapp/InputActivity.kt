@@ -17,12 +17,11 @@ import android.widget.ArrayAdapter
 import android.widget.SpinnerAdapter
 import io.realm.Realm
 import kotlinx.android.synthetic.main.content_input.*
-import kotlinx.android.synthetic.main.content_input.view.*
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
-class InputActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
+class InputActivity : AppCompatActivity(){
 
     private var mYear = 0
     private var mMonth = 0
@@ -31,13 +30,6 @@ class InputActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private var mMinute = 0
     private var mTask: Task? = null
     private lateinit var mRealm: Realm
-
-    override fun onItemSelected(arg0: AdapterView<*>, arg1: View, position: Int, id: Long){
-        TODO()
-    }
-    override fun onNothingSelected(arg0: AdapterView<*>) {
-        TODO()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +55,19 @@ class InputActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         val categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row
             , categoryRealmResults.map { it.name }.toTypedArray() + "Add Category"
         )
-        category_spinner.adapter = categoryAdapter as SpinnerAdapter
+        category_spinner.adapter = categoryAdapter
+        category_spinner.setOnItemSelectedListener(object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                Log.d("hello_adapter", parent?.adapter?.getItem(position).toString())
+                if(parent?.adapter?.getItem(position).toString() == "Add Category"){
+                    val intent = Intent(this@InputActivity, CategoryActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                Log.d("hello_adapter_nothing",parent.toString())
+            }
+        })
         //mRealm.close()
 
         //EXTRA_task
