@@ -11,6 +11,7 @@ import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import io.realm.Realm
+import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 
 
 class TaskAlarmReceiver: BroadcastReceiver() {

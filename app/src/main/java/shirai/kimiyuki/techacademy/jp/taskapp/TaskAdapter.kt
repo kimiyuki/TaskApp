@@ -10,6 +10,7 @@ import android.widget.TextView
 import io.realm.Realm
 import io.realm.RealmChangeListener
 import kotlinx.android.synthetic.main.activity_main.view.*
+import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.text.SimpleDateFormat
 import java.util.*
 

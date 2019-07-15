@@ -5,6 +5,7 @@ import android.os.Bundle
 import io.realm.Realm
 import io.realm.RealmChangeListener
 import io.realm.Sort
+import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 
 class CategoryActivity : AppCompatActivity() {
 
@@ -20,19 +21,6 @@ class CategoryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_category)
-
-    }
-
-    private fun reloadListView(query:String?){
-        val taskRealmResults = if(query != null) {
-            mRealm.where(Category::class.java)
-                .contains("name", query)
-                .findAll().sort( "date", Sort.DESCENDING )
-        }else{
-            mRealm.where(Category::class.java).findAll()
-                .sort( "date", Sort.DESCENDING )
-        }
-
 
     }
 }

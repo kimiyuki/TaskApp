@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar
 import android.view.View
 import io.realm.Realm
 import kotlinx.android.synthetic.main.content_input.*
+import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
 class InputActivity : AppCompatActivity() {

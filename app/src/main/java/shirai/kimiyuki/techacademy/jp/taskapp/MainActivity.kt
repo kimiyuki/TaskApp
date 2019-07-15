@@ -10,17 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
 import android.widget.EditText
-import android.widget.Toast
 import io.realm.*
-import io.realm.annotations.PrimaryKey
 
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.row.*
-import kotlinx.android.synthetic.main.row.view.*
-import java.io.Serializable
+import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
+import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
 const val EXTRA_TASK = "jp.techacademy.shirai.kimiyuki.taskapp.TASK"
@@ -163,27 +158,4 @@ class MainActivity : AppCompatActivity() {
 }
 
 
-open class Task: RealmObject(), Serializable{
-    var title: String = ""
-    var contents: String = ""
-    var date: Date = Date()
-    //category: Category = Category()は、cannot be @Required or @NotNullになる。
-    var category: Category? = null
 
-    @PrimaryKey
-    var id:Int = 0
-
-}
-
-open class Category: RealmObject(), Serializable {
-    var name: String = ""
-    @PrimaryKey
-    var id:Int = 0
-}
-    /*
-        上記のString型のcategoryを、クラスのCategoryへ変更してください
-        追加で、タスク作成画面から遷移する画面を1つ作成してください
-        その画面ではCategory（idとカテゴリ名を持つ）のクラスを作成できるようにしてください
-        タスク作成画面でTaskを作成するときにCategoryを選択できるようにしてください
-        一覧画面でCategoryを選択すると、Categoryに属しているタスクのみ表示されるようにしてください
-     */
