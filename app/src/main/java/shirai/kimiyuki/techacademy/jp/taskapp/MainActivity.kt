@@ -10,6 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import io.realm.*
@@ -17,6 +19,7 @@ import io.realm.annotations.PrimaryKey
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.row.*
+import kotlinx.android.synthetic.main.row.view.*
 import java.io.Serializable
 import java.util.*
 
@@ -51,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         mRealm.addChangeListener(mRealmListener)
 
         //listView
-        mTaskAdapter = TaskAdapter(this@MainActivity)
+        mTaskAdapter = TaskAdapter(this@MainActivity){ reloadListView(it) }
 
         //show data
         addTaskForTest()
@@ -86,8 +89,6 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(EXTRA_TASK, task.id)
             startActivity(intent)
         }
-
-
         listView1.setOnItemLongClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
             val builder = AlertDialog.Builder(this@MainActivity)
@@ -119,14 +120,12 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+
     }
 
     private fun reloadListView(query:String?){
         val taskRealmResults = if(query != null) {
-//            val categories = mRealm.where(Category::class.java)
-//                .contains("name",query).findAll()
             mRealm.where(Task::class.java)
-                //.`in`("category", categories.map { it.id }.toTypedArray())
                 .contains("category.name", query)
                 .findAll().sort( "date", Sort.DESCENDING )
         }else{

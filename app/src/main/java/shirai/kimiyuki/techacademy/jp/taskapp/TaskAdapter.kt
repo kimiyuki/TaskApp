@@ -13,18 +13,9 @@ import kotlinx.android.synthetic.main.activity_main.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TaskAdapter(context: Context) : BaseAdapter() {
+class TaskAdapter(context: Context, var text3callback: (query:String) -> Unit) : BaseAdapter() {
     private val mLayoutInflater: LayoutInflater = LayoutInflater.from(context)
     var taskList = mutableListOf<Task>()
-
-    private lateinit var mRealm: Realm
-    private lateinit var mTaskAdapter: TaskAdapter
-
-    private val mRealmListener = object : RealmChangeListener<Realm> {
-        override fun onChange(t: Realm) {
-            reloadListView(null)
-        }
-    }
 
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
@@ -40,16 +31,8 @@ class TaskAdapter(context: Context) : BaseAdapter() {
 
         val textView3 = view.findViewById<TextView>(R.id.text3)
         textView3.text = taskList[position].category?.name?.toString()
-        textView3.setOnClickListener { v ->
-            mRealm = Realm.getDefaultInstance()
-            mRealm.addChangeListener(mRealmListener)
-            val taskRealmResults =  mRealm.where(Task::class.java)
-                .contains("category.name", textView3.text.toString())
-                .findAll()
-            mTaskAdapter.taskList = mRealm.copyFromRealm(taskRealmResults)
-            view.listView1.adapter = mTaskAdapter
-
-
+        textView3.setOnClickListener{ v ->
+            text3callback(textView3.text.toString())
         }
 
         return view
