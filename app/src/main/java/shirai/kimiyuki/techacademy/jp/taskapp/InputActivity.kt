@@ -9,13 +9,20 @@ import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.Toolbar
+
+import android.util.Log
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.SpinnerAdapter
 import io.realm.Realm
 import kotlinx.android.synthetic.main.content_input.*
+import kotlinx.android.synthetic.main.content_input.view.*
+import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
-class InputActivity : AppCompatActivity() {
+class InputActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private var mYear = 0
     private var mMonth = 0
@@ -23,6 +30,14 @@ class InputActivity : AppCompatActivity() {
     private var mHour = 0
     private var mMinute = 0
     private var mTask: Task? = null
+    private lateinit var mRealm: Realm
+
+    override fun onItemSelected(arg0: AdapterView<*>, arg1: View, position: Int, id: Long){
+        TODO()
+    }
+    override fun onNothingSelected(arg0: AdapterView<*>) {
+        TODO()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +46,7 @@ class InputActivity : AppCompatActivity() {
         //actionbar
         val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
-        if(supportActionBar != null){
+        if (supportActionBar != null) {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         }
 
@@ -40,12 +55,22 @@ class InputActivity : AppCompatActivity() {
         times_button.setOnClickListener(mOnTimeClickListener)
         done_button.setOnClickListener(mOnDoneClickListener)
 
+        mRealm = Realm.getDefaultInstance()
+
+        val categoryRealmResults = mRealm.where(Category::class.java).findAll()
+        //realm does NOT provide cursor interface?
+        //https://stackoverflow.com/questions/29587215/get-cursor-by-using-realm-library
+        val categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row
+            , categoryRealmResults.map { it.name }.toTypedArray() + "Add Category"
+        )
+        category_spinner.adapter = categoryAdapter as SpinnerAdapter
+        //mRealm.close()
+
         //EXTRA_task
         val intent = getIntent()
         val taskId = intent.getIntExtra(EXTRA_TASK, -1)
-        val realm = Realm.getDefaultInstance()
-        mTask = realm.where(Task::class.java).equalTo("id", taskId).findFirst()
-        realm.close()
+        mTask = mRealm.where(Task::class.java).equalTo("id", taskId).findFirst()
+        mRealm.close()
 
         if(mTask == null){
             val calendar = Calendar.getInstance()
@@ -57,7 +82,7 @@ class InputActivity : AppCompatActivity() {
         }else{
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
-            category_edit_text.setText(mTask!!.category?.name?.toString())
+            //category_edit_text.setText(mTask!!.category?.name?.toString())
 
             val calendar = Calendar.getInstance()
             calendar.time = mTask!!.date

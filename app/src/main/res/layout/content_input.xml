@@ -18,21 +18,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="タイトル"/>
+
     <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/spinner"/>
-    <EditText
-            android:id="@+id/category_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/title_edit_text"
-            android:hint="category"/>
+            android:id="@+id/category_spinner"/>
     <EditText
             android:id="@+id/content_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/category_edit_text"
-            android:hint="内容"/>
+            android:layout_below="@id/category_spinner"
+            android:hint="内容" android:singleLine="false" android:elegantTextHeight="true" android:minHeight="200dp"/>
+
     <Button
             android:id="@+id/date_button"
             android:layout_width="0dp"
@@ -52,7 +50,7 @@
             style="@style/Widget.AppCompat.Button.Borderless"/>
     <Button
             android:id="@+id/done_button"
-            android:layout_width="96dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/times_button"
             android:layout_alignParentRight="true"
