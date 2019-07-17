@@ -28,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/textInputLayout"
-            tools:listitem="@layout/row"/>
+            tools:listitem="@layout/row_tasks"/>
 </RelativeLayout>
 
 

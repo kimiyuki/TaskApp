@@ -42,7 +42,8 @@ class CategoryActivity : AppCompatActivity() {
         } else {
             mRealm.where(Category::class.java).findAll()
         }
-        mCategoryAdapter.categoryList = mRealm.copyFromRealm(categoryRealmResults)
-        listViewCategory.adapter = mCategoryAdapter
+        //TODO
+//        mCategoryAdapter = mRealm.copyFromRealm(categoryRealmResults)
+//        listViewCategory.adapter = mCategoryAdapter
     }
 }
