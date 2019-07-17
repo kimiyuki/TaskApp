@@ -1,5 +1,6 @@
 package shirai.kimiyuki.techacademy.jp.taskapp
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
@@ -24,6 +25,11 @@ class CategoryActivity : AppCompatActivity() {
 
         //show data
         reloadListViewCategory(null)
+
+        button_category_backto_previous.setOnClickListener{
+           val intent = Intent(this, InputActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun reloadListViewCategory(query: String?) {

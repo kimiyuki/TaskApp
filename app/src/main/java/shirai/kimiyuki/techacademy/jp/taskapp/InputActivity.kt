@@ -1,13 +1,11 @@
 package shirai.kimiyuki.techacademy.jp.taskapp
 
-import android.app.AlarmManager
-import android.app.DatePickerDialog
-import android.app.PendingIntent
-import android.app.TimePickerDialog
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.support.v7.widget.Toolbar
 
 import android.util.Log
@@ -47,27 +45,12 @@ class InputActivity : AppCompatActivity(){
         times_button.setOnClickListener(mOnTimeClickListener)
         done_button.setOnClickListener(mOnDoneClickListener)
 
+        setDataInUI()
+    }
+
+    private fun setDataInUI() {
         mRealm = Realm.getDefaultInstance()
 
-        val categoryRealmResults = mRealm.where(Category::class.java).findAll()
-        //realm does NOT provide cursor interface?
-        //https://stackoverflow.com/questions/29587215/get-cursor-by-using-realm-library
-        val categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row
-            , categoryRealmResults.map { it.name }.toTypedArray() + "Add Category"
-        )
-        category_spinner.adapter = categoryAdapter
-        category_spinner.setOnItemSelectedListener(object: AdapterView.OnItemSelectedListener{
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                Log.d("hello_adapter", parent?.adapter?.getItem(position).toString())
-                if(parent?.adapter?.getItem(position).toString() == "Add Category"){
-                    val intent = Intent(this@InputActivity, CategoryActivity::class.java)
-                    startActivity(intent)
-                }
-            }
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                Log.d("hello_adapter_nothing",parent.toString())
-            }
-        })
         //mRealm.close()
 
         //EXTRA_task
@@ -76,16 +59,17 @@ class InputActivity : AppCompatActivity(){
         mTask = mRealm.where(Task::class.java).equalTo("id", taskId).findFirst()
         mRealm.close()
 
-        if(mTask == null){
+        if (mTask == null) {
             val calendar = Calendar.getInstance()
             mYear = calendar.get(Calendar.YEAR)
             mMonth = calendar.get(Calendar.MONTH)
             mDay = calendar.get(Calendar.DAY_OF_MONTH)
             mHour = calendar.get(Calendar.HOUR_OF_DAY)
             mMinute = calendar.get(Calendar.MINUTE)
-        }else{
+        } else {
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
+            setDataAtCategory(mTask!!.category.toString())
             //category_edit_text.setText(mTask!!.category?.name?.toString())
 
             val calendar = Calendar.getInstance()
@@ -96,7 +80,8 @@ class InputActivity : AppCompatActivity(){
             mHour = calendar.get(Calendar.HOUR_OF_DAY)
             mMinute = calendar.get(Calendar.MINUTE)
 
-            val dateString = mYear.toString() + "/" + String.format("%02d", mMonth + 1) + "/" + String.format("%02d", mDay)
+            val dateString =
+                mYear.toString() + "/" + String.format("%02d", mMonth + 1) + "/" + String.format("%02d", mDay)
             val timeString = String.format("%02d", mHour) + ":" + String.format("%02d", mMinute)
 
             date_button.text = dateString
@@ -104,6 +89,42 @@ class InputActivity : AppCompatActivity(){
         }
     }
 
+    private fun setDataAtCategory(firstItem:String?) {
+        val categoryRealmResults = mRealm.where(Category::class.java).findAll()
+        var categoryArray = categoryRealmResults.map{it.name}.toTypedArray()
+        categoryArray = categoryArray + "Add Category"
+        TODO()
+        //realm does NOT provide cursor interface?
+        //https://stackoverflow.com/questions/29587215/get-cursor-by-using-realm-library
+        val categoryAdapter = ArrayAdapter(
+            this, R.layout.category_spinner_row, categoryArray)
+        category_spinner.adapter = categoryAdapter
+        category_spinner.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                Log.d("hello_adapter", parent?.adapter?.getItem(position).toString())
+                if (parent?.adapter?.getItem(position).toString() == "Add Category") {
+                    val intent = Intent(this@InputActivity, CategoryActivity::class.java)
+                    startActivityForResult(intent, 1)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                Log.d("hello_adapter_nothing", parent.toString())
+            }
+        })
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if(requestCode != 1 || resultCode != Activity.RESULT_OK || data != null) return
+        val category = data?.getStringExtra("category")
+        setDataAtCategory(category)
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
+        super.onSaveInstanceState(outState, outPersistentState)
+        TODO()
+    }
 
     private val mOnDateClickListener = View.OnClickListener {
         val datePickerDialog = DatePickerDialog(this,
