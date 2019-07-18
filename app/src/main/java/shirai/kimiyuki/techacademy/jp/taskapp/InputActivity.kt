@@ -8,26 +8,13 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.support.v7.widget.Toolbar
 
-import android.util.Log
 import android.view.View
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.SpinnerAdapter
 import io.realm.Realm
 import kotlinx.android.synthetic.main.content_input.*
-import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
-fun <T> transformElementList(x:T?, y:List<T>, lastword:T): MutableList<T>{
-    Log.d("hello transformElement", x?.toString())
-    val i = if(x==null) 0 else y.indexOfFirst{ e -> e?.equals(x!!)!!}
-    //print(i)
-    val a = y.subList(0,i)
-    val b = y.subList(i+1, y.size)
-    val c = mutableListOf<T>(y[i])
-    return (c + a + b + listOf(lastword)) as MutableList
-}
 
 class InputActivity : AppCompatActivity(){
 
@@ -66,6 +53,8 @@ class InputActivity : AppCompatActivity(){
         mTask = mRealm.where(Task::class.java).equalTo("id", taskId).findFirst()
         mRealm.close()
 
+        val spinner = category_spinner as AdapterView<*>
+
         if (mTask == null) {
             val calendar = Calendar.getInstance()
             mYear = calendar.get(Calendar.YEAR)
@@ -76,7 +65,6 @@ class InputActivity : AppCompatActivity(){
         } else {
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
-            setDataAtCategory(mTask!!.category?.name.toString())
             //category_edit_text.setText(mTask!!.category?.name?.toString())
 
             val calendar = Calendar.getInstance()
@@ -96,41 +84,16 @@ class InputActivity : AppCompatActivity(){
         }
     }
 
-    private fun setDataAtCategory(firstItem:String?) {
-        val categoryRealmResults = mRealm.where(Category::class.java).findAll()
-        var categoryArray = categoryRealmResults.map{it.name}//.toTypedArray()
-        categoryArray = transformElementList(firstItem, categoryArray, "Add Category")
-        categoryArray.map{ Log.d("hello_categoryArray", it)}
-        //realm does NOT provide cursor interface?
-        //https://stackoverflow.com/questions/29587215/get-cursor-by-using-realm-library
-        val categoryAdapter = ArrayAdapter(
-            this, R.layout.category_spinner_row, categoryArray)
-        category_spinner.adapter = categoryAdapter
-        category_spinner.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                Log.d("hello_adapter", parent?.adapter?.getItem(position).toString())
-                if (parent?.adapter?.getItem(position).toString() == "Add Category") {
-                    val intent = Intent(this@InputActivity, CategoryActivity::class.java)
-                    startActivityForResult(intent, 1)
-                }
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                Log.d("hello_adapter_nothing", parent.toString())
-            }
-        })
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if(requestCode != 1 || resultCode != Activity.RESULT_OK || data != null) return
         val category = data?.getStringExtra("category")
-        setDataAtCategory(category)
+        //.setSpinnerForCategory(this, category, mRealm)
         super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onResume(){
        super.onResume()
-        TODO()
         //set new category in the spinner
     }
 

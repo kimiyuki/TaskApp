@@ -49,9 +49,6 @@ class MainActivity : AppCompatActivity() {
         mRealm = Realm.getDefaultInstance()
         mRealm.addChangeListener(mRealmListener)
 
-        //listView
-        mTaskAdapter = TaskAdapter(this@MainActivity){ reloadListView(it) }
-
         //show data
         addTaskForTest()
         reloadListView(null)
@@ -61,7 +58,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume(){
         super.onResume()
-        TODO()
         //set new cateogry in the spinner
         //create your spinner
     }
@@ -127,6 +123,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun reloadListView(query:String?){
+
+        //set up mTaskAdapter`
+        val categoryRealmResults = mRealm.where(Category::class.java).findAll()
+        var categoryArray = categoryRealmResults.map{it.name}//.toTypedArray()
+        categoryArray = transformElementList(null, categoryArray, "Add Category")
+        mTaskAdapter = TaskAdapter(this@MainActivity, categoryArray.toTypedArray())
+
         val taskRealmResults = if(query != null) {
             mRealm.where(Task::class.java)
                 .contains("category.name", query)
@@ -137,6 +140,7 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter.taskList = mRealm.copyFromRealm(taskRealmResults)
         listView1.adapter = mTaskAdapter
         mTaskAdapter.notifyDataSetChanged()
+
     }
 
 
