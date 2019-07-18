@@ -59,6 +59,13 @@ class MainActivity : AppCompatActivity() {
         _setListeners()
     }
 
+    override fun onResume(){
+        super.onResume()
+        TODO()
+        //set new cateogry in the spinner
+        //create your spinner
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if(!mRealm.isClosed) mRealm.close()

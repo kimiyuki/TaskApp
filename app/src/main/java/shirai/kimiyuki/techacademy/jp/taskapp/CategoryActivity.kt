@@ -27,8 +27,15 @@ class CategoryActivity : AppCompatActivity() {
         reloadListViewCategory(null)
 
         button_category_backto_previous.setOnClickListener{
-           val intent = Intent(this, InputActivity::class.java)
-            startActivity(intent)
+//           val intent = Intent(this, InputActivity::class.java)
+//            startActivity(intent)
+            finish()
+        }
+
+        button_category_create.setOnClickListener{
+            TODO()
+            //check_duplication?
+            finish()
         }
     }
 

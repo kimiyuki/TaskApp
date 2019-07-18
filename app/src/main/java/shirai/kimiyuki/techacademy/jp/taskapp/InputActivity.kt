@@ -128,9 +128,14 @@ class InputActivity : AppCompatActivity(){
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    override fun onResume(){
+       super.onResume()
+        TODO()
+        //set new category in the spinner
+    }
+
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
         super.onSaveInstanceState(outState, outPersistentState)
-        TODO()
     }
 
     private val mOnDateClickListener = View.OnClickListener {
