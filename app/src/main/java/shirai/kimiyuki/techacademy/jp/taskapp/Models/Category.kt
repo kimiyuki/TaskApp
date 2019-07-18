@@ -7,7 +7,15 @@ open class Category: RealmObject() {
     var name: String = ""
     @PrimaryKey
     var id:Int = 0
+    //TODO: ensure name is unique
+    // How? options
+    // -1 use composite PrimaryKey? in this model
+    // -2 validate in App(controller?)
 }
+/*
+nameをuniqueにするには？
+https://github.com/realm/realm-java/issues/6108
+*/
 /*
     上記のString型のcategoryを、クラスのCategoryへ変更してください
     追加で、タスク作成画面から遷移する画面を1つ作成してください

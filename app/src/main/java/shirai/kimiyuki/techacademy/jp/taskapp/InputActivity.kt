@@ -19,6 +19,16 @@ import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
+fun <T> transformElementList(x:T?, y:List<T>, lastword:T): MutableList<T>{
+    Log.d("hello transformElement", x?.toString())
+    val i = if(x==null) 0 else y.indexOfFirst{ e -> e?.equals(x!!)!!}
+    //print(i)
+    val a = y.subList(0,i)
+    val b = y.subList(i+1, y.size)
+    val c = mutableListOf<T>(y[i])
+    return (c + a + b + listOf(lastword)) as MutableList
+}
+
 class InputActivity : AppCompatActivity(){
 
     private var mYear = 0
@@ -40,7 +50,7 @@ class InputActivity : AppCompatActivity(){
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         }
 
-        //UI
+        //listeners in UI
         date_button.setOnClickListener(mOnDateClickListener)
         times_button.setOnClickListener(mOnTimeClickListener)
         done_button.setOnClickListener(mOnDoneClickListener)
@@ -49,11 +59,8 @@ class InputActivity : AppCompatActivity(){
     }
 
     private fun setDataInUI() {
-        mRealm = Realm.getDefaultInstance()
-
-        //mRealm.close()
-
         //EXTRA_task
+        mRealm = Realm.getDefaultInstance()
         val intent = getIntent()
         val taskId = intent.getIntExtra(EXTRA_TASK, -1)
         mTask = mRealm.where(Task::class.java).equalTo("id", taskId).findFirst()
@@ -69,7 +76,7 @@ class InputActivity : AppCompatActivity(){
         } else {
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
-            setDataAtCategory(mTask!!.category.toString())
+            setDataAtCategory(mTask!!.category?.name.toString())
             //category_edit_text.setText(mTask!!.category?.name?.toString())
 
             val calendar = Calendar.getInstance()
@@ -91,9 +98,9 @@ class InputActivity : AppCompatActivity(){
 
     private fun setDataAtCategory(firstItem:String?) {
         val categoryRealmResults = mRealm.where(Category::class.java).findAll()
-        var categoryArray = categoryRealmResults.map{it.name}.toTypedArray()
-        categoryArray = categoryArray + "Add Category"
-        TODO()
+        var categoryArray = categoryRealmResults.map{it.name}//.toTypedArray()
+        categoryArray = transformElementList(firstItem, categoryArray, "Add Category")
+        categoryArray.map{ Log.d("hello_categoryArray", it)}
         //realm does NOT provide cursor interface?
         //https://stackoverflow.com/questions/29587215/get-cursor-by-using-realm-library
         val categoryAdapter = ArrayAdapter(
