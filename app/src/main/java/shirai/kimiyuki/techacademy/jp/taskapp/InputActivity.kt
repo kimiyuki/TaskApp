@@ -11,8 +11,10 @@ import android.util.Log
 
 import android.view.View
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import io.realm.Realm
 import kotlinx.android.synthetic.main.content_input.*
+import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
@@ -25,6 +27,7 @@ class InputActivity : AppCompatActivity(){
     private var mHour = 0
     private var mMinute = 0
     private var mTask: Task? = null
+    private var categories:List<String>? = null
     private lateinit var mRealm: Realm
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +55,7 @@ class InputActivity : AppCompatActivity(){
         val intent = getIntent()
         val taskId = intent.getIntExtra(EXTRA_TASK, -1)
         mTask = mRealm.where(Task::class.java).equalTo("id", taskId).findFirst()
+        categories = mRealm.where(Category::class.java).findAll().map{it.name}
         mRealm.close()
 
         val spinner = category_spinner as AdapterView<*>
@@ -66,7 +70,12 @@ class InputActivity : AppCompatActivity(){
         } else {
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
-            //category_edit_text.setText(mTask!!.category?.name?.toString())
+
+            val _categories = transformElementList(
+                mTask?.category?.name, categories?.toList()!!, "Add Category")
+            val categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row, _categories )
+            categoryAdapter.setDropDownViewResource(R.layout.category_spinner_row)
+            category_spinner.adapter = categoryAdapter
 
             val calendar = Calendar.getInstance()
             calendar.time = mTask!!.date
