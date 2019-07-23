@@ -5,6 +5,7 @@ import io.realm.Realm
 import io.realm.RealmConfiguration
 
 class TaskApp: Application(){
+
     override fun onCreate() {
         super.onCreate()
         Realm.init(this)

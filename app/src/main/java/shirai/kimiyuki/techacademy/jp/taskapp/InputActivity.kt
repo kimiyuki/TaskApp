@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.support.v7.widget.Toolbar
+import android.util.Log
 
 import android.view.View
 import android.widget.AdapterView
@@ -90,6 +91,7 @@ class InputActivity : AppCompatActivity(){
         val category = data?.getStringExtra("category")
         //.setSpinnerForCategory(this, category, mRealm)
         super.onActivityResult(requestCode, resultCode, data)
+        Log.d("hello_result", requestCode.toString())
     }
 
     override fun onResume(){

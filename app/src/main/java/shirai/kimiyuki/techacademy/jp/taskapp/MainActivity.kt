@@ -5,11 +5,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.EditText
 import io.realm.*
 
@@ -19,6 +22,7 @@ import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
 const val EXTRA_TASK = "jp.techacademy.shirai.kimiyuki.taskapp.TASK"
+var can_go = false
 
 fun EditText.afterTextChanged(callback: (String) -> Unit) {
     this.addTextChangedListener(object : TextWatcher {
@@ -31,29 +35,41 @@ fun EditText.afterTextChanged(callback: (String) -> Unit) {
     })
 }
 
+var isUserInteract:Boolean = false
+
 class MainActivity : AppCompatActivity() {
+
     private lateinit var mRealm: Realm
+
     private val mRealmListener = object : RealmChangeListener<Realm>{
         override fun onChange(t: Realm) {
+            Log.d("hello mRealm", t.toString())
             reloadListView(null)
         }
     }
     private lateinit var mTaskAdapter: TaskAdapter
 
 
+    override fun onUserInteraction(){
+        isUserInteract = true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        isUserInteract = false
 
         //Realm
         mRealm = Realm.getDefaultInstance()
         mRealm.addChangeListener(mRealmListener)
 
+
         //show data
         addTaskForTest()
         reloadListView(null)
-
         _setListeners()
+        //mTaskAdapter.isStarting = false
+        Log.d("hello done", "onCreate hs done")
     }
 
     override fun onResume(){
@@ -82,12 +98,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         listView1.setOnItemClickListener { parent, view, position, id ->
+            Log.d("hello_task", "listview listener touched" )
             val task = parent.adapter.getItem(position) as Task
             val intent = Intent(this@MainActivity, InputActivity::class.java)
             Log.d("hello_task", "${task.id}" )
             intent.putExtra(EXTRA_TASK, task.id)
             startActivity(intent)
         }
+
         listView1.setOnItemLongClickListener { parent, view, position, id ->
             val task = parent.adapter.getItem(position) as Task
             val builder = AlertDialog.Builder(this@MainActivity)
@@ -114,21 +132,27 @@ class MainActivity : AppCompatActivity() {
             builder.setNegativeButton("CANCEL", null)
             val dialog = builder.create()
             dialog.show()
-
             Log.d("hello", "delete the task")
             true
         }
-
-
     }
 
     private fun reloadListView(query:String?){
 
         //set up mTaskAdapter`
         val categoryRealmResults = mRealm.where(Category::class.java).findAll()
-        var categoryArray = categoryRealmResults.map{it.name}//.toTypedArray()
-        categoryArray = transformElementList(null, categoryArray, "Add Category")
-        mTaskAdapter = TaskAdapter(this@MainActivity, categoryArray.toTypedArray())
+        var categoryArray = categoryRealmResults.map{it.name}.toTypedArray()
+        //callback(task, categoryName ->) works for Spinner when item is selected
+        mTaskAdapter = TaskAdapter(this@MainActivity, categoryArray){ task, categoryName ->
+            Log.d("hello2", task.title.toString())
+            Log.d("hello2", categoryName)
+            //ISSUE endless execution? update invoke another selection item?
+            mRealm.executeTransaction {
+                val cat = mRealm.where(Category::class.java).equalTo("name", categoryName).findFirst()
+                task?.category = cat
+                mRealm.copyToRealmOrUpdate(task!!)
+            }
+        }
 
         val taskRealmResults = if(query != null) {
             mRealm.where(Task::class.java)
@@ -140,7 +164,6 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter.taskList = mRealm.copyFromRealm(taskRealmResults)
         listView1.adapter = mTaskAdapter
         mTaskAdapter.notifyDataSetChanged()
-
     }
 
 
@@ -155,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val categories = mRealm.where(Category::class.java).findAll()
-        for(i in 0..20){
+        for(i in 0..100){
             val task = Task()
             task.title = "今日の作業から明日の作業" + i.toString()
             task.contents = "プログラムを書いてpushする"
@@ -166,7 +189,6 @@ class MainActivity : AppCompatActivity() {
         }
         mRealm.commitTransaction()
     }
-
 }
 
 
