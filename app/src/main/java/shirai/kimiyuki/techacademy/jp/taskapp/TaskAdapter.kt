@@ -38,31 +38,24 @@ class TaskAdapter(
 
         val _categories = transformElementList(
             taskList[position].category?.name, categories?.toList(), "Add Category")
-        val categoryAdapter = ArrayAdapter(context, R.layout.category_spinner_row, _categories )
+        val categoryAdapter = ArrayAdapter(
+            context, R.layout.category_spinner_row, _categories )
         categoryAdapter.setDropDownViewResource(R.layout.category_spinner_row)
-        //holder.spinner.setSelected(false)  // must
-        //holder.spinner.setSelection(0,true)
+        holder.spinner.setSelection(Adapter.NO_SELECTION)  // must
         holder.spinner.adapter = categoryAdapter
-        holder.spinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
-                if(isUserInteract) {
-                    Log.d("hello_adapter", "onItem")
-                    Log.d("hello_adapter", parent?.adapter?.getItem(p).toString())
-                    if (parent?.adapter?.getItem(p).toString() == "Add Category") {
-                        val intent = Intent(context, CategoryActivity::class.java)
-                        ContextCompat.startActivity(context, intent, null)
-                    } else {
-                        Log.d("hello", "spinner item selected ${isUserInteract}")
-                        update_category_in_task(taskList[position], parent?.adapter?.getItem(p).toString())
-                        //re update to order categories
-                        holder.spinner.adapter = categoryAdapter
-                        Log.d("hello", "task update with category commited")
-                    }
-                    isUserInteract = false
-                }
-            }
-            override fun onNothingSelected(parent: AdapterView<*>) { Log.d("hello_nothing", "on nothing") }
-        }
+        //https://stackoverflow.com/questions/14560733/spinners-onitemselected-callback-called-twice-after-a-rotation-if-non-zero-posi
+        holder.spinner.post{
+            holder.spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
+                    if (view != null) {
+                        if (parent?.adapter?.getItem(p).toString() == "Add Category") {
+                            val intent = Intent(context, CategoryActivity::class.java)
+                            ContextCompat.startActivity(context, intent, null)
+                        } else {
+                            update_category_in_task(taskList[position], parent?.adapter?.getItem(p).toString())
+                        }}}
+                override fun onNothingSelected(parent: AdapterView<*>) {
+                    Log.d("hello_nothing", "on nothing") } } }
         view.tag = holder
         return view
     }

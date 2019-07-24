@@ -12,17 +12,18 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.EditText
 import io.realm.*
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_input.*
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
 const val EXTRA_TASK = "jp.techacademy.shirai.kimiyuki.taskapp.TASK"
-var can_go = false
 
 fun EditText.afterTextChanged(callback: (String) -> Unit) {
     this.addTextChangedListener(object : TextWatcher {
@@ -34,8 +35,6 @@ fun EditText.afterTextChanged(callback: (String) -> Unit) {
         }
     })
 }
-
-var isUserInteract:Boolean = false
 
 class MainActivity : AppCompatActivity() {
 
@@ -49,15 +48,9 @@ class MainActivity : AppCompatActivity() {
     }
     private lateinit var mTaskAdapter: TaskAdapter
 
-
-    override fun onUserInteraction(){
-        isUserInteract = true
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        isUserInteract = false
 
         //Realm
         mRealm = Realm.getDefaultInstance()
@@ -94,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 //        }
         searchBox.afterTextChanged { text ->
             reloadListView(text)
-            Log.d("hello", text)
+            Log.d("hello afterTextChanged", text)
         }
 
         listView1.setOnItemClickListener { parent, view, position, id ->
@@ -138,32 +131,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun reloadListView(query:String?){
+        if(query == null) refreshTasks()
+        _reloadListView(query)
+    }
 
-        //set up mTaskAdapter`
-        val categoryRealmResults = mRealm.where(Category::class.java).findAll()
-        var categoryArray = categoryRealmResults.map{it.name}.toTypedArray()
-        //callback(task, categoryName ->) works for Spinner when item is selected
-        mTaskAdapter = TaskAdapter(this@MainActivity, categoryArray){ task, categoryName ->
-            Log.d("hello2", task.title.toString())
-            Log.d("hello2", categoryName)
-            //ISSUE endless execution? update invoke another selection item?
-            mRealm.executeTransaction {
-                val cat = mRealm.where(Category::class.java).equalTo("name", categoryName).findFirst()
-                task?.category = cat
-                mRealm.copyToRealmOrUpdate(task!!)
-            }
-        }
-
-        val taskRealmResults = if(query != null) {
+    private fun _reloadListView(query:String?){
+        val taskResults = if(query != null) {
             mRealm.where(Task::class.java)
                 .contains("category.name", query)
                 .findAll().sort( "date", Sort.DESCENDING )
         }else{
             mRealm.where(Task::class.java).findAll().sort( "date", Sort.DESCENDING )
         }
-        mTaskAdapter.taskList = mRealm.copyFromRealm(taskRealmResults)
-        listView1.adapter = mTaskAdapter
+        Log.d("hello count", taskResults.size.toString())
+        mTaskAdapter.taskList = mRealm.copyFromRealm(taskResults)
         mTaskAdapter.notifyDataSetChanged()
+
+        listView1.adapter = mTaskAdapter
+    }
+
+    private fun refreshTasks() {
+        //set up mTaskAdapter`
+        val categoryRealmResults = mRealm.where(Category::class.java).findAll()
+        var categoryArray = categoryRealmResults.map { it.name }.toTypedArray()
+        //callback(task, categoryName ->) works for Spinner when item is selected
+        mTaskAdapter = TaskAdapter(this@MainActivity, categoryArray) { task, categoryName ->
+            Log.d("hello2", task.title.toString())
+            Log.d("hello2", categoryName)
+            //ISSUE endless execution? update invoke another selection item?
+            mRealm.executeTransaction {
+                val cat = it.where(Category::class.java).equalTo("name", categoryName).findFirst()
+                task?.category = cat
+                it.copyToRealmOrUpdate(task!!)
+            }
+        }
     }
 }
 
