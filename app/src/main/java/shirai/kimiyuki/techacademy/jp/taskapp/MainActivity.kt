@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
 
         //show data
-        addTaskForTest()
+        //addTaskForTest()
         reloadListView(null)
         _setListeners()
         //mTaskAdapter.isStarting = false
@@ -164,30 +164,6 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter.taskList = mRealm.copyFromRealm(taskRealmResults)
         listView1.adapter = mTaskAdapter
         mTaskAdapter.notifyDataSetChanged()
-    }
-
-
-    private fun addTaskForTest(){
-        val str_categories:List<String> = listOf("sport", "book", "play")
-        mRealm.beginTransaction()
-        for(i in 0..2){
-            val category = Category()
-            category.id = i
-            category.name = str_categories[i]
-            mRealm.copyToRealmOrUpdate(category)
-        }
-
-        val categories = mRealm.where(Category::class.java).findAll()
-        for(i in 0..100){
-            val task = Task()
-            task.title = "今日の作業から明日の作業" + i.toString()
-            task.contents = "プログラムを書いてpushする"
-            task.date = Date()
-            task.id = i
-            task.category =  categories.shuffled().take(1)[0]
-            mRealm.copyToRealmOrUpdate(task)
-        }
-        mRealm.commitTransaction()
     }
 }
 
