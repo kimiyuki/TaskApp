@@ -5,23 +5,17 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.View
-import android.widget.Adapter
-import android.widget.AdapterView
 import android.widget.EditText
 import io.realm.*
 
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_input.*
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
-import java.util.*
 
 const val EXTRA_TASK = "jp.techacademy.shirai.kimiyuki.taskapp.TASK"
 
@@ -93,10 +87,10 @@ class MainActivity : AppCompatActivity() {
         listView1.setOnItemClickListener { parent, view, position, id ->
             Log.d("hello_task", "listview listener touched" )
             val task = parent.adapter.getItem(position) as Task
-            val intent = Intent(this@MainActivity, InputActivity::class.java)
+            val sendIntent = Intent(this@MainActivity, InputActivity::class.java)
             Log.d("hello_task", "${task.id}" )
-            intent.putExtra(EXTRA_TASK, task.id)
-            startActivity(intent)
+            sendIntent.putExtra(EXTRA_TASK, task.id)
+            startActivity(sendIntent)
         }
 
         listView1.setOnItemLongClickListener { parent, view, position, id ->

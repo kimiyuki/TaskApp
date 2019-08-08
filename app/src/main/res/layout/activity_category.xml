@@ -10,7 +10,6 @@
     <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textInputLayoutCategory"
             android:layout_marginTop="16px"
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" android:layout_marginBottom="8dp"
@@ -20,7 +19,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="hint"
-                android:id="@+id/searchBoxCategory"/>
+                android:id="@+id/category_input"/>
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"

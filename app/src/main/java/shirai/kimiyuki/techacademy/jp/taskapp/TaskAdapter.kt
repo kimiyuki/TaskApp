@@ -8,20 +8,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import io.realm.Realm
-import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.text.SimpleDateFormat
 import java.util.*
 
 
 class TaskAdapter(
-    val context: Context, val categories: Array<String>, var update_category_in_task: (Task, String)->Unit) : BaseAdapter() {
+    val context: Context, val categories: Array<String>,
+    var update_category_in_task: (Task, String)->Unit) : BaseAdapter() {
 
     private val mLayoutInflater: LayoutInflater = LayoutInflater.from(context)
-    private val simpleDateFormat = SimpleDateFormat("dd HH",Locale.JAPANESE)
+    private val simpleDateFormat = SimpleDateFormat("MM/dd HH",Locale.JAPANESE)
     var taskList = mutableListOf<Task>()
-    var isStarting = true
 
     private class ViewHolder(view:View){
         val text1 = view.findViewById<TextView>(R.id.text1)
@@ -47,8 +45,10 @@ class TaskAdapter(
         holder.spinner.post{
             holder.spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
+                    Log.d("hello adapter", parent?.adapter?.getItem(p).toString())
                     if (view != null) {
                         if (parent?.adapter?.getItem(p).toString() == "Add Category") {
+                            //TODO need to get returned value
                             val intent = Intent(context, CategoryActivity::class.java)
                             ContextCompat.startActivity(context, intent, null)
                         } else {

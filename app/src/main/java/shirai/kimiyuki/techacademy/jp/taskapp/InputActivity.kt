@@ -6,6 +6,7 @@ import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.Toolbar
 import android.util.Log
 
@@ -76,6 +77,19 @@ class InputActivity : AppCompatActivity(){
             val categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row, _categories )
             categoryAdapter.setDropDownViewResource(R.layout.category_spinner_row)
             category_spinner.adapter = categoryAdapter
+            category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
+                    if (view != null) {
+                        if (parent?.adapter?.getItem(p).toString() == "Add Category") {
+                            //TODO need to get returned value
+                            val intent = Intent(this@InputActivity, CategoryActivity::class.java)
+                            ContextCompat.startActivity(this@InputActivity, intent, null)
+                        } else {
+                            //TODO
+                            //update_category_in_task(taskList[position], parent?.adapter?.getItem(p).toString())
+                        }}}
+                override fun onNothingSelected(parent: AdapterView<*>) {
+                    Log.d("hello_nothing", "on nothing") } }
 
             val calendar = Calendar.getInstance()
             calendar.time = mTask!!.date

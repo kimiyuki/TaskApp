@@ -1,14 +1,9 @@
 package shirai.kimiyuki.techacademy.jp.taskapp
 
 import android.content.Context
-import android.content.Intent
-import android.support.v4.content.ContextCompat
-import android.util.Log
-import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import io.realm.Realm
-import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 
 class Utils {
 }

@@ -1,13 +1,14 @@
 package shirai.kimiyuki.techacademy.jp.taskapp
 
-import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
+import android.widget.Toast
 import io.realm.Realm
-import io.realm.RealmChangeListener
 import kotlinx.android.synthetic.main.activity_category.*
+import kotlinx.android.synthetic.main.row_categories.*
+import kotlinx.android.synthetic.main.row_tasks.*
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
 
 class CategoryActivity : AppCompatActivity() {
@@ -27,15 +28,26 @@ class CategoryActivity : AppCompatActivity() {
         reloadListViewCategory(null)
 
         button_category_backto_previous.setOnClickListener{
-//           val intent = Intent(this, InputActivity::class.java)
-//            startActivity(intent)
             finish()
         }
 
         button_category_create.setOnClickListener{
-            TODO()
-            //check_duplication?
-            finish()
+            Log.d("hello category", row_category_text2.text.toString())
+            val categoryRealmResults = mRealm.where(Category::class.java).findAll()
+            var categoryArray = categoryRealmResults.map { it.name }.toTypedArray()
+            if(categoryArray.contains(category_input.text.toString())){
+                Toast.makeText(this, "重複してます", Toast.LENGTH_LONG)
+            }else{
+                Log.d("hello category", categoryArray.joinToString())
+                //check_duplication?
+                mRealm.executeTransaction {
+                    val category = Category()
+                    category.id = categoryArray.size
+                    category.name = category_input.text.toString()
+                    mRealm.copyToRealmOrUpdate(category)
+                }
+                finish()
+            }
         }
     }
 
