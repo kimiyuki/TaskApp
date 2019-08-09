@@ -70,33 +70,8 @@ class InputActivity : AppCompatActivity(){
             mHour = calendar.get(Calendar.HOUR_OF_DAY)
             mMinute = calendar.get(Calendar.MINUTE)
         } else {
-            title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
-            categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row,
-                transformElementList(mTask?.category?.name, categories?.toList()!!, "Add Category"))
-            categoryAdapter?.setDropDownViewResource(R.layout.category_spinner_row)
-            category_spinner.adapter = categoryAdapter
-            category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
-                    val cat_name = parent?.adapter?.getItem(p) as String
-                    if (view != null) {
-                        if (cat_name == "Add Category") {
-                            //TODO need to get returned value
-                            val intent = Intent(this@InputActivity, CategoryActivity::class.java)
-                            this@InputActivity.startActivityForResult(intent, 2)
-                            Log.d("aaa async", "no")
-                            //go to onActivity callback
-                        }else{
-//                            mRealm.executeTransaction{
-//                              val cat = it.where(Category::class.java).equalTo("name", cat_name).findFirst()
-//                              mTask?.category = cat
-//                            }
-//                            categoryAdapter.notifyDataSetChanged()
-                        }
-                    }}
-                override fun onNothingSelected(parent: AdapterView<*>) {
-                    Log.d("hello_nothing", "on nothing") } }
-
+            title_edit_text.setText(mTask!!.title)
             val calendar = Calendar.getInstance()
             calendar.time = mTask!!.date
             mYear = calendar.get(Calendar.YEAR)
@@ -104,14 +79,29 @@ class InputActivity : AppCompatActivity(){
             mDay = calendar.get(Calendar.DAY_OF_MONTH)
             mHour = calendar.get(Calendar.HOUR_OF_DAY)
             mMinute = calendar.get(Calendar.MINUTE)
-
             val dateString =
                 mYear.toString() + "/" + String.format("%02d", mMonth + 1) + "/" + String.format("%02d", mDay)
             val timeString = String.format("%02d", mHour) + ":" + String.format("%02d", mMinute)
-
             date_button.text = dateString
             times_button.text = timeString
         }
+
+        categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row,
+            transformElementList(mTask?.category?.name, categories?.toList()!!, "Add Category"))
+        categoryAdapter?.setDropDownViewResource(R.layout.category_spinner_row)
+        category_spinner.adapter = categoryAdapter
+        category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
+                val cat_name = parent?.adapter?.getItem(p) as String
+                if (view != null) {
+                    if (cat_name == "Add Category") {
+                        val intent = Intent(this@InputActivity, CategoryActivity::class.java)
+                        this@InputActivity.startActivityForResult(intent, 2)
+                        Log.d("aaa yes this is the async proc", "no")
+                    }}}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                Log.d("hello_nothing", "on nothing") } }
+
     }
 
 
@@ -197,11 +187,9 @@ class InputActivity : AppCompatActivity(){
                 equalTo("name", category_spinner.selectedItem.toString())?.
                 findFirst()
             realm.copyToRealmOrUpdate(mTask!!)
+            setAlarm(calendar, mTask!!.id)
         }
         realm.close()
-        //TODO: cancelTransactionになった場合に、setAlarmを実行したくない。
-        //try catchでは、executeTransaction内の例外は処理済みにされてしまう？
-        setAlarm(calendar, mTask!!.id)
     }
 
     private fun setAlarm(calendar: GregorianCalendar, taskId:Int) {
