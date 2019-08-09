@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import io.realm.Realm
 import kotlinx.android.synthetic.main.content_input.*
 import shirai.kimiyuki.techacademy.jp.taskapp.Models.Category
@@ -30,6 +31,8 @@ class InputActivity : AppCompatActivity(){
     private var mTask: Task? = null
     private var categories:List<String>? = null
     private lateinit var mRealm: Realm
+    private var categoryAdapter:ArrayAdapter<String>? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,8 +62,6 @@ class InputActivity : AppCompatActivity(){
         categories = mRealm.where(Category::class.java).findAll().map{it.name}
         mRealm.close()
 
-        val spinner = category_spinner as AdapterView<*>
-
         if (mTask == null) {
             val calendar = Calendar.getInstance()
             mYear = calendar.get(Calendar.YEAR)
@@ -71,23 +72,28 @@ class InputActivity : AppCompatActivity(){
         } else {
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
-
-            val _categories = transformElementList(
-                mTask?.category?.name, categories?.toList()!!, "Add Category")
-            val categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row, _categories )
-            categoryAdapter.setDropDownViewResource(R.layout.category_spinner_row)
+            categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row,
+                transformElementList(mTask?.category?.name, categories?.toList()!!, "Add Category"))
+            categoryAdapter?.setDropDownViewResource(R.layout.category_spinner_row)
             category_spinner.adapter = categoryAdapter
             category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
+                    val cat_name = parent?.adapter?.getItem(p) as String
                     if (view != null) {
-                        if (parent?.adapter?.getItem(p).toString() == "Add Category") {
+                        if (cat_name == "Add Category") {
                             //TODO need to get returned value
                             val intent = Intent(this@InputActivity, CategoryActivity::class.java)
-                            ContextCompat.startActivity(this@InputActivity, intent, null)
-                        } else {
-                            //TODO
-                            //update_category_at_task(taskList[position], parent?.adapter?.getItem(p).toString())
-                        }}}
+                            this@InputActivity.startActivityForResult(intent, 2)
+                            Log.d("aaa async", "no")
+                            //go to onActivity callback
+                        }else{
+//                            mRealm.executeTransaction{
+//                              val cat = it.where(Category::class.java).equalTo("name", cat_name).findFirst()
+//                              mTask?.category = cat
+//                            }
+//                            categoryAdapter.notifyDataSetChanged()
+                        }
+                    }}
                 override fun onNothingSelected(parent: AdapterView<*>) {
                     Log.d("hello_nothing", "on nothing") } }
 
@@ -110,11 +116,21 @@ class InputActivity : AppCompatActivity(){
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if(requestCode != 1 || resultCode != Activity.RESULT_OK || data != null) return
-        val category = data?.getStringExtra("category")
-        //.setSpinnerForCategory(this, category, mRealm)
+        if(requestCode != 2 || resultCode != Activity.RESULT_OK || data == null){
+            //Toast.makeText(this, "おかしい", Toast.LENGTH_LONG).show()
+            return
+        }
         super.onActivityResult(requestCode, resultCode, data)
         Log.d("hello_result", requestCode.toString())
+        Log.d("aaa requestCode", requestCode.toString())
+        Log.d("aaa resultCode", resultCode.toString())
+        Log.d("aaa result", data?.getIntExtra("NEW_CATEGORY", -100).toString())
+        val cat  = mRealm.where(Category::class.java).equalTo(
+            "id", data?.getIntExtra("NEW_CATEGORY", 0)).findFirst()
+        categoryAdapter?.insert(cat?.name, 0)
+        categoryAdapter?.setDropDownViewResource(R.layout.category_spinner_row)
+        categoryAdapter?.notifyDataSetChanged()
+        category_spinner.setSelection(0)
     }
 
     override fun onResume(){
@@ -177,9 +193,10 @@ class InputActivity : AppCompatActivity(){
             mTask!!.contents = content
             val date = calendar.time
             mTask!!.date = date
-
+            mTask!!.category = it.where(Category::class.java)?.
+                equalTo("name", category_spinner.selectedItem.toString())?.
+                findFirst()
             realm.copyToRealmOrUpdate(mTask!!)
-            //realm.commitTransaction()
         }
         realm.close()
         //TODO: cancelTransactionになった場合に、setAlarmを実行したくない。

@@ -54,6 +54,11 @@ class CategoryActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d("aaa category", "resume")
+    }
+
     private fun reloadListViewCategory(query: String?) {
         //listView
         val categoryRealmResults = if (query != null) {

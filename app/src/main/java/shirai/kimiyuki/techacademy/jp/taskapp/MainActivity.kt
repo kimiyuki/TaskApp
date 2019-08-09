@@ -63,15 +63,20 @@ class MainActivity : AppCompatActivity() {
 
         //show data
         //addTaskForTest()
-        reloadListView(null)
+        //reloadListView(null)
         _setListeners()
         //mTaskAdapter.isStarting = false
         Log.d("hello done", "onCreate hs done")
     }
 
+    override fun onResume() {
+        super.onResume()
+        reloadListView(null)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         //super.onActivityResult(requestCode, resultCode, data)
-        Log.d("aaa requestCode", requestCode.toString())
+        Log.d("aaa MainActivity requestCode", requestCode.toString())
         Log.d("aaa resultCode", resultCode.toString())
         Log.d("aaa result", data?.getIntExtra("NEW_CATEGORY", -100).toString())
         Log.d("aaa position", mTaskAdapter?.lastPosition.toString())
@@ -159,7 +164,7 @@ class MainActivity : AppCompatActivity() {
             mRealm.where(Task::class.java).findAll().sort( "date", Sort.DESCENDING )
         }
         Log.d("hello count", taskResults.size.toString())
-        mTaskAdapter.taskList = mRealm.copyFromRealm(taskResults)
+        mTaskAdapter.taskList = mRealm.copyFromRealm(taskResults.sort("date"))
         mTaskAdapter.notifyDataSetChanged()
 
         listView1.adapter = mTaskAdapter
