@@ -1,5 +1,6 @@
 package shirai.kimiyuki.techacademy.jp.taskapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -40,12 +41,14 @@ class CategoryActivity : AppCompatActivity() {
             }else{
                 Log.d("hello category", categoryArray.joinToString())
                 //check_duplication?
+                val category = Category()
                 mRealm.executeTransaction {
-                    val category = Category()
                     category.id = categoryArray.size
                     category.name = category_input.text.toString()
                     mRealm.copyToRealmOrUpdate(category)
                 }
+                intent.putExtra("NEW_CATEGORY", category.id)
+                setResult(RESULT_OK, intent);
                 finish()
             }
         }

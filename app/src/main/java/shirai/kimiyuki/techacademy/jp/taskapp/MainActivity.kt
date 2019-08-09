@@ -11,6 +11,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.EditText
+import android.widget.Toast
 import io.realm.*
 
 import kotlinx.android.synthetic.main.activity_main.*
@@ -32,22 +33,31 @@ fun EditText.afterTextChanged(callback: (String) -> Unit) {
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var mRealm: Realm
-
+    private var mRealm: Realm = Realm.getDefaultInstance()
     private val mRealmListener = object : RealmChangeListener<Realm>{
         override fun onChange(t: Realm) {
             Log.d("hello mRealm", t.toString())
             reloadListView(null)
-        }
-    }
+        } }
     private lateinit var mTaskAdapter: TaskAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val categoryRealmResults = mRealm.where(Category::class.java).findAll()
+        var categoryArray = categoryRealmResults.map { it.name }.toTypedArray()
+        mTaskAdapter = TaskAdapter(this@MainActivity, categoryArray,
+            update_category_at_task= { task, categoryName ->
+                Log.d("hello2", task.title.toString())
+                Log.d("hello2", categoryName)
+                //ISSUE endless execution? update invoke another selection item?
+                mRealm.executeTransaction {
+                    val cat = it.where(Category::class.java).equalTo("name", categoryName).findFirst()
+                    task?.category = cat
+                    it.copyToRealmOrUpdate(task!!)
+                } })
         //Realm
-        mRealm = Realm.getDefaultInstance()
         mRealm.addChangeListener(mRealmListener)
 
 
@@ -59,10 +69,24 @@ class MainActivity : AppCompatActivity() {
         Log.d("hello done", "onCreate hs done")
     }
 
-    override fun onResume(){
-        super.onResume()
-        //set new cateogry in the spinner
-        //create your spinner
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        //super.onActivityResult(requestCode, resultCode, data)
+        Log.d("aaa requestCode", requestCode.toString())
+        Log.d("aaa resultCode", resultCode.toString())
+        Log.d("aaa result", data?.getIntExtra("NEW_CATEGORY", -100).toString())
+        Log.d("aaa position", mTaskAdapter?.lastPosition.toString())
+        if(requestCode != 1 || resultCode != -1){
+            Toast.makeText(this, "おかしい", Toast.LENGTH_LONG)
+            return
+        }
+        val task = mTaskAdapter.getItem(mTaskAdapter?.lastPosition) as Task
+        mRealm.beginTransaction()
+        val cat  = mRealm.where(Category::class.java).equalTo(
+            "id", data?.getIntExtra("NEW_CATEGORY", 0)).findFirst()
+        task.category = cat
+        mRealm.copyToRealmOrUpdate(task)
+        mRealm.commitTransaction()
+        refreshTasks()
     }
 
     override fun onDestroy() {
@@ -76,9 +100,6 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this@MainActivity, InputActivity::class.java)
             startActivity(intent)
         }
-//        text3.setOnClickListener {_ ->
-//            Log.d("hello", "aaaaa")
-//        }
         searchBox.afterTextChanged { text ->
             reloadListView(text)
             Log.d("hello afterTextChanged", text)
@@ -145,20 +166,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshTasks() {
+        Log.d("aaa refresh task", "a")
         //set up mTaskAdapter`
         val categoryRealmResults = mRealm.where(Category::class.java).findAll()
         var categoryArray = categoryRealmResults.map { it.name }.toTypedArray()
-        //callback(task, categoryName ->) works for Spinner when item is selected
-        mTaskAdapter = TaskAdapter(this@MainActivity, categoryArray) { task, categoryName ->
-            Log.d("hello2", task.title.toString())
-            Log.d("hello2", categoryName)
-            //ISSUE endless execution? update invoke another selection item?
-            mRealm.executeTransaction {
-                val cat = it.where(Category::class.java).equalTo("name", categoryName).findFirst()
-                task?.category = cat
-                it.copyToRealmOrUpdate(task!!)
-            }
-        }
+        mTaskAdapter.categories = categoryArray
+        mTaskAdapter.notifyDataSetChanged()
     }
 }
 

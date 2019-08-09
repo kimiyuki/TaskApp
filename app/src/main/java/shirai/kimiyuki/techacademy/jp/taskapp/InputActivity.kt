@@ -86,7 +86,7 @@ class InputActivity : AppCompatActivity(){
                             ContextCompat.startActivity(this@InputActivity, intent, null)
                         } else {
                             //TODO
-                            //update_category_in_task(taskList[position], parent?.adapter?.getItem(p).toString())
+                            //update_category_at_task(taskList[position], parent?.adapter?.getItem(p).toString())
                         }}}
                 override fun onNothingSelected(parent: AdapterView<*>) {
                     Log.d("hello_nothing", "on nothing") } }

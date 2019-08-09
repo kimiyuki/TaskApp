@@ -1,8 +1,8 @@
 package shirai.kimiyuki.techacademy.jp.taskapp
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,12 +14,13 @@ import java.util.*
 
 
 class TaskAdapter(
-    val context: Context, val categories: Array<String>,
-    var update_category_in_task: (Task, String)->Unit) : BaseAdapter() {
+    val context: Context, var categories: Array<String>,
+    var update_category_at_task: (Task, String)->Unit) : BaseAdapter() {
 
     private val mLayoutInflater: LayoutInflater = LayoutInflater.from(context)
     private val simpleDateFormat = SimpleDateFormat("MM/dd HH",Locale.JAPANESE)
     var taskList = mutableListOf<Task>()
+    var lastPosition = -1
 
     private class ViewHolder(view:View){
         val text1 = view.findViewById<TextView>(R.id.text1)
@@ -47,12 +48,15 @@ class TaskAdapter(
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
                     Log.d("hello adapter", parent?.adapter?.getItem(p).toString())
                     if (view != null) {
+                        lastPosition = position
+                        Log.d("aaa adapter lastPosition", lastPosition.toString())
                         if (parent?.adapter?.getItem(p).toString() == "Add Category") {
                             //TODO need to get returned value
                             val intent = Intent(context, CategoryActivity::class.java)
-                            ContextCompat.startActivity(context, intent, null)
+                            //ContextCompat.startActivity(context, intent, null)
+                            (context as Activity).startActivityForResult(intent,1)
                         } else {
-                            update_category_in_task(taskList[position], parent?.adapter?.getItem(p).toString())
+                            update_category_at_task(taskList[position], parent?.adapter?.getItem(p).toString())
                         }}}
                 override fun onNothingSelected(parent: AdapterView<*>) {
                     Log.d("hello_nothing", "on nothing") } } }
