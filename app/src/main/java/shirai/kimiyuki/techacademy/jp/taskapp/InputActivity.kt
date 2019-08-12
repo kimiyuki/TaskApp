@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar
 import android.util.Log
 
 import android.view.View
+import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -21,7 +22,7 @@ import shirai.kimiyuki.techacademy.jp.taskapp.Models.Task
 import java.util.*
 
 
-class InputActivity : AppCompatActivity(){
+class InputActivity : AppCompatActivity() {
 
     private var mYear = 0
     private var mMonth = 0
@@ -29,10 +30,10 @@ class InputActivity : AppCompatActivity(){
     private var mHour = 0
     private var mMinute = 0
     private var mTask: Task? = null
-    private var categories:List<String>? = null
+    private var categories: List<String>? = null
     private lateinit var mRealm: Realm
-    private var categoryAdapter:ArrayAdapter<String>? = null
-
+    private var categoryAdapter: ArrayAdapter<String>? = null
+    private var isUserInteract = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,15 +54,19 @@ class InputActivity : AppCompatActivity(){
         setDataInUI()
     }
 
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        Log.d("hello user interact", isUserInteract.toString())
+        isUserInteract = true
+    }
+
     private fun setDataInUI() {
         //EXTRA_task
         mRealm = Realm.getDefaultInstance()
         val intent = getIntent()
         val taskId = intent.getIntExtra(EXTRA_TASK, -1)
         mTask = mRealm.where(Task::class.java).equalTo("id", taskId).findFirst()
-        categories = mRealm.where(Category::class.java).findAll().map{it.name}
         mRealm.close()
-
         if (mTask == null) {
             val calendar = Calendar.getInstance()
             mYear = calendar.get(Calendar.YEAR)
@@ -85,46 +90,49 @@ class InputActivity : AppCompatActivity(){
             date_button.text = dateString
             times_button.text = timeString
         }
+        setCategorySpinner(mTask?.category?.name)
+    }
 
-        categoryAdapter = ArrayAdapter(this, R.layout.category_spinner_row,
-            transformElementList(mTask?.category?.name, categories?.toList()!!, "Add Category"))
-        categoryAdapter?.setDropDownViewResource(R.layout.category_spinner_row)
+    private fun setCategorySpinner(firstCategoryName: String?) {
+        categories = mRealm.where(Category::class.java).findAll().map { it.name }
+        categoryAdapter = ArrayAdapter(
+            this, R.layout.category_spinner_row,
+            transformElementList(firstCategoryName, categories?.toList()!!, "Add Category")
+        )
+        categoryAdapter!!.setDropDownViewResource(R.layout.category_spinner_row)
         category_spinner.adapter = categoryAdapter
+        //category_spinner.setSelection(0, false)  // must
         category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
-                val cat_name = parent?.adapter?.getItem(p) as String
-                if (view != null) {
-                    if (cat_name == "Add Category") {
+                Log.d("hello user interact in spinner", isUserInteract.toString())
+                if(!isUserInteract) return
+                isUserInteract = false
+                Log.d("hello cat_name", parent?.adapter?.getItem(p).toString())
+                if (view != null)
+                    if (parent?.adapter?.getItem(p).toString() == "Add Category") {
                         val intent = Intent(this@InputActivity, CategoryActivity::class.java)
                         this@InputActivity.startActivityForResult(intent, 2)
                         Log.d("aaa yes this is the async proc", "no")
-                    }}}
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                Log.d("hello_nothing", "on nothing") } }
-
+                    }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>) { Log.d("hello_nothing", "on nothing") }
+        }
     }
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if(requestCode != 2 || resultCode != Activity.RESULT_OK || data == null){
-            //Toast.makeText(this, "おかしい", Toast.LENGTH_LONG).show()
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != 2 || resultCode != Activity.RESULT_OK || data == null) {
             return
         }
-        super.onActivityResult(requestCode, resultCode, data)
-        Log.d("hello_result", requestCode.toString())
-        Log.d("aaa requestCode", requestCode.toString())
-        Log.d("aaa resultCode", resultCode.toString())
-        Log.d("aaa result", data?.getIntExtra("NEW_CATEGORY", -100).toString())
-        val cat  = mRealm.where(Category::class.java).equalTo(
-            "id", data?.getIntExtra("NEW_CATEGORY", 0)).findFirst()
-        categoryAdapter?.insert(cat?.name, 0)
-        categoryAdapter?.setDropDownViewResource(R.layout.category_spinner_row)
-        categoryAdapter?.notifyDataSetChanged()
-        category_spinner.setSelection(0)
+        val cat = mRealm.where(Category::class.java).equalTo(
+            "id", data!!.getIntExtra("NEW_CATEGORY", 0)
+        ).findFirst()
+        setCategorySpinner(cat!!.name)
     }
 
-    override fun onResume(){
-       super.onResume()
+    override fun onResume() {
+        super.onResume()
         //set new category in the spinner
     }
 
@@ -134,23 +142,24 @@ class InputActivity : AppCompatActivity(){
 
     private val mOnDateClickListener = View.OnClickListener {
         val datePickerDialog = DatePickerDialog(this,
-            DatePickerDialog.OnDateSetListener{
-                _, year, month, dateOfWeek ->
+            DatePickerDialog.OnDateSetListener { _, year, month, dateOfWeek ->
                 mYear = year; mMonth = month; mDay = dateOfWeek
-                val dateString = mYear.toString() + "/" + String.format("%2d", mMonth+1) + "/" + String.format("%2d", mDay)
-                date_button.text  = dateString
-            }, mYear,mMonth,mDay)
+                val dateString =
+                    mYear.toString() + "/" + String.format("%2d", mMonth + 1) + "/" + String.format("%2d", mDay)
+                date_button.text = dateString
+            }, mYear, mMonth, mDay
+        )
         datePickerDialog.show()
     }
 
     private val mOnTimeClickListener = View.OnClickListener {
         val timePickerDialog = TimePickerDialog(this,
-            TimePickerDialog.OnTimeSetListener{
-                   _, hour, minutes ->
+            TimePickerDialog.OnTimeSetListener { _, hour, minutes ->
                 mHour = hour; mMinute = minutes
                 val timeString = mHour.toString() + ":" + String.format("%2d", mMinute)
                 times_button.text = timeString
-            }, mHour, mMinute, false)
+            }, mHour, mMinute, false
+        )
         timePickerDialog.show()
     }
 
@@ -159,7 +168,7 @@ class InputActivity : AppCompatActivity(){
         finish()
     }
 
-    private fun addTask(){
+    private fun addTask() {
         val realm = Realm.getDefaultInstance()
         val calendar = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         realm.executeTransaction {
@@ -183,16 +192,15 @@ class InputActivity : AppCompatActivity(){
             mTask!!.contents = content
             val date = calendar.time
             mTask!!.date = date
-            mTask!!.category = it.where(Category::class.java)?.
-                equalTo("name", category_spinner.selectedItem.toString())?.
-                findFirst()
+            mTask!!.category =
+                it.where(Category::class.java)?.equalTo("name", category_spinner.selectedItem.toString())?.findFirst()
             realm.copyToRealmOrUpdate(mTask!!)
             setAlarm(calendar, mTask!!.id)
         }
         realm.close()
     }
 
-    private fun setAlarm(calendar: GregorianCalendar, taskId:Int) {
+    private fun setAlarm(calendar: GregorianCalendar, taskId: Int) {
         val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
         resultIntent.putExtra(EXTRA_TASK, taskId)
         val resultPendingIntent = PendingIntent.getBroadcast(

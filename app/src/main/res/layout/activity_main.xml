@@ -12,23 +12,33 @@
     <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textInputLayout" android:layout_marginStart="16dp" android:layout_marginLeft="16dp"
+            android:id="@+id/textInputLayout"
+            android:layout_marginStart="16dp" android:layout_marginLeft="16dp"
             android:layout_marginTop="16dp" android:layout_marginEnd="16dp" android:layout_marginRight="16dp"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="2dp">
 
         <android.support.design.widget.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:hint="category filter"
+                android:hint="title filter"
                 android:id="@+id/searchBox"/>
     </android.support.design.widget.TextInputLayout>
+
+    <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp" android:layout_marginLeft="16dp"
+            android:layout_marginTop="2dp" android:layout_marginEnd="4dp" android:layout_marginRight="16dp"
+            android:layout_below="@id/textInputLayout"
+            android:id="@+id/spinner_filter"/>
 
     <ListView
             android:id="@+id/listView1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/textInputLayout"
-            tools:listitem="@layout/row_tasks"/>
+            android:layout_below="@id/spinner_filter"
+            tools:listitem="@layout/row_tasks">
+    </ListView>
 </RelativeLayout>
 
 

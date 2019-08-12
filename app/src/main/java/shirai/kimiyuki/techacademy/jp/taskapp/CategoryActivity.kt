@@ -33,7 +33,6 @@ class CategoryActivity : AppCompatActivity() {
         }
 
         button_category_create.setOnClickListener{
-            Log.d("hello category", row_category_text2.text.toString())
             val categoryRealmResults = mRealm.where(Category::class.java).findAll()
             var categoryArray = categoryRealmResults.map { it.name }.toTypedArray()
             if(categoryArray.contains(category_input.text.toString())){

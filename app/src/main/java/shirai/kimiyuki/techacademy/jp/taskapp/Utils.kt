@@ -8,7 +8,8 @@ import io.realm.Realm
 class Utils {
 }
 
-fun <T> transformElementList(x:T?, y:List<T>, lastword:T): MutableList<T>{
+fun <T> transformElementList(x:T?, y:List<T>?, lastword:T): MutableList<T>{
+    if(y == null || y.isEmpty()) return listOf(lastword) as MutableList
     val i = if(x==null) 0 else y.indexOfFirst{ e -> e?.equals(x!!)!!}
     //print(i)
     val a = if(i==0) listOf<T>() else y.subList(0,i)

@@ -44,7 +44,7 @@ class TaskApp: Application(){
             task.contents = "プログラムを書いてpushする"
             task.date = Date()
             task.id = i
-            task.category =  categories.shuffled().take(1)[0]
+            task.category =  categories.shuffled().first()
             mRealm.copyToRealmOrUpdate(task)
         }
         mRealm.commitTransaction()
