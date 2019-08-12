@@ -36,9 +36,17 @@ class TaskAdapter(
         holder.text1.text = taskList[position].title
         holder.text2.text = simpleDateFormat.format(taskList[position].date)
 
-        val _categories = transformElementList(
-            taskList[position].category?.name, categories?.toList(), "Add Category"
-        )
+        val _categories = if(categories.size==0) {
+            arrayOf("select", "Add Category")
+        } else{
+            if(taskList[position].category != null){
+                arrayOf(taskList[position].category?.name as String) +
+                categories.filter{ it != taskList[position].category?.name as String} +
+                arrayOf("Add Category")
+            }else{
+                categories + arrayOf("Add Category")
+            }
+        }
         val categoryAdapter = ArrayAdapter( context, R.layout.category_spinner_row, _categories )
         categoryAdapter.setDropDownViewResource(R.layout.category_spinner_row)
         holder.spinner.setSelection(Adapter.NO_SELECTION)  // must

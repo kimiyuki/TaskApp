@@ -23,7 +23,7 @@ class TaskApp: Application(){
             mRealm.executeTransaction{
                 it.deleteAll()
             }
-            addTaskForTest()
+            //addTaskForTest()
         }
     }
 

@@ -84,6 +84,7 @@ class MainActivity : AppCompatActivity() {
                 reloadListView(query=null)
             }
         }
+        refreshTasks()
         reloadListView(null)
     }
 
@@ -165,29 +166,30 @@ class MainActivity : AppCompatActivity() {
 
     private fun reloadListView(query:String?){
         val query = query ?: searchBox.text.toString()
-        val cat = spinner_filter.selectedItem as String
+        val cat = (spinner_filter?.selectedItem ?: "") as String
         Log.d("hello query and cat", "${query}:${cat}:${searchBox.text}")
         val taskResults = when {
             (query.isEmpty() && cat == "All") -> { mRealm.where(Task::class.java).findAll() }
-            (query.isEmpty()) -> { mRealm.where(Task::class.java).contains("category.name", cat as String).findAll() }
-            (cat == "All") -> { mRealm.where(Task::class.java) .contains("title", query as String) .findAll()}
+            (query.isEmpty()) -> { mRealm.where(Task::class.java).contains("category.name", cat).findAll() }
+            (cat == "All") -> { mRealm.where(Task::class.java) .contains("title", query).findAll()}
             else -> {
                 mRealm.where(Task::class.java)
-                    .contains("title", query as String)
-                    .contains("category.name", cat as String) .findAll() }
+                    .contains("title", query)
+                    .contains("category.name", cat) .findAll() }
         }
         Log.d("hello count", taskResults.size.toString())
         mTaskAdapter.taskList = mRealm.copyFromRealm(taskResults.sort("date"))
-        mTaskAdapter.notifyDataSetChanged()
         listView1.adapter = mTaskAdapter
+        mTaskAdapter.notifyDataSetChanged()
     }
 
     private fun refreshTasks() {
-        Log.d("aaa refresh task", "a")
         //set up mTaskAdapter`
         val categoryRealmResults = mRealm.where(Category::class.java).findAll()
         var categoryArray = categoryRealmResults.map { it.name }.toTypedArray()
+        Log.d("aaa refresh task", categoryArray.toString())
         mTaskAdapter.categories = categoryArray
+        mTaskAdapter.taskList = mRealm.copyFromRealm(mRealm.where(Task::class.java).findAll().sort("date"))
         mTaskAdapter.notifyDataSetChanged()
     }
 }

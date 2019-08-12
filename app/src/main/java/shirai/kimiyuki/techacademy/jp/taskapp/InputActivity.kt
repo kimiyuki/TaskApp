@@ -94,7 +94,7 @@ class InputActivity : AppCompatActivity() {
     }
 
     private fun setCategorySpinner(firstCategoryName: String?) {
-        categories = mRealm.where(Category::class.java).findAll().map { it.name } as List<String>
+        categories = mRealm.where(Category::class.java).findAll().map { it.name }.reversed() as List<String>
         val cat  = if (categories == null || categories?.size==0){
             listOf("select", "Add Category")
         } else {
