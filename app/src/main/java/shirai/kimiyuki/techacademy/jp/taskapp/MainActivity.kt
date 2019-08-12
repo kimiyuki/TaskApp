@@ -169,6 +169,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun _reloadListView(query:String?, iscategory: String?){
+        Log.d("hello query", query ?: "no query")
         val taskResults = if(query != null) {
             mRealm.where(Task::class.java)
                 .contains("title", query)

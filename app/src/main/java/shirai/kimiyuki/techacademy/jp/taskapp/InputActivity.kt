@@ -94,22 +94,24 @@ class InputActivity : AppCompatActivity() {
     }
 
     private fun setCategorySpinner(firstCategoryName: String?) {
-        categories = mRealm.where(Category::class.java).findAll().map { it.name }
-        categoryAdapter = ArrayAdapter(
-            this, R.layout.category_spinner_row,
-            transformElementList(firstCategoryName, categories?.toList()!!, "Add Category")
-        )
-        categoryAdapter!!.setDropDownViewResource(R.layout.category_spinner_row)
+        categories = mRealm.where(Category::class.java).findAll().map { it.name } as List<String>
+        val cat  = if (categories == null || categories?.size==0){
+            listOf("select", "Add Category")
+        } else {
+            categories!! + listOf("Add Category")
+        }
+        categoryAdapter = ArrayAdapter( this, R.layout.category_spinner_row, cat)
         category_spinner.adapter = categoryAdapter
-        //category_spinner.setSelection(0, false)  // must
+        categoryAdapter!!.setDropDownViewResource(R.layout.category_spinner_row)
         category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, p: Int, id: Long) {
                 Log.d("hello user interact in spinner", isUserInteract.toString())
                 if(!isUserInteract) return
                 isUserInteract = false
-                Log.d("hello cat_name", parent?.adapter?.getItem(p).toString())
+                val cat = parent?.adapter?.getItem(p) as String
+                Log.d("hello cat_name", cat)
                 if (view != null)
-                    if (parent?.adapter?.getItem(p).toString() == "Add Category") {
+                    if (cat == "Add Category") {
                         val intent = Intent(this@InputActivity, CategoryActivity::class.java)
                         this@InputActivity.startActivityForResult(intent, 2)
                         Log.d("aaa yes this is the async proc", "no")
