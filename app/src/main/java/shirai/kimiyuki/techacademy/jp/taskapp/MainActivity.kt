@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     private val mRealmListener = object : RealmChangeListener<Realm>{
         override fun onChange(t: Realm) {
             Log.d("hello mRealm", t.toString())
-            reloadListView(null,category = null)
+            reloadListView(null)
         } }
     private lateinit var mTaskAdapter: TaskAdapter
 
@@ -81,10 +81,10 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val cat = parent?.adapter?.getItem(position) as String
-                reloadListView(query=null, category = cat)
+                reloadListView(query=null)
             }
         }
-        reloadListView(null, category = null)
+        reloadListView(null)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         searchBox.afterTextChanged { text ->
-            reloadListView(text, category=null)
+            reloadListView(query=text)
             Log.d("hello afterTextChanged", text)
         }
 
@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity() {
                 val alarmManager = getSystemService( Context.ALARM_SERVICE) as AlarmManager
                 alarmManager.cancel(resultPendingIntent)
 
-                reloadListView(null, category = null)
+                reloadListView(null)
             }
             builder.setNegativeButton("CANCEL", null)
             val dialog = builder.create()
@@ -163,24 +163,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun reloadListView(query:String?, category:String?){
-        if(query == null && category == null) refreshTasks()
-        _reloadListView(query, category)
-    }
-
-    private fun _reloadListView(query:String?, iscategory: String?){
-        Log.d("hello query", query ?: "no query")
-        val taskResults = if(query != null) {
-            mRealm.where(Task::class.java)
-                .contains("title", query)
-                .findAll().sort( "date", Sort.DESCENDING )
-        }else{
-            mRealm.where(Task::class.java).findAll().sort( "date", Sort.DESCENDING )
+    private fun reloadListView(query:String?){
+        val query = query ?: searchBox.text.toString()
+        val cat = spinner_filter.selectedItem as String
+        Log.d("hello query and cat", "${query}:${cat}:${searchBox.text}")
+        val taskResults = when {
+            (query.isEmpty() && cat == "All") -> { mRealm.where(Task::class.java).findAll() }
+            (query.isEmpty()) -> { mRealm.where(Task::class.java).contains("category.name", cat as String).findAll() }
+            (cat == "All") -> { mRealm.where(Task::class.java) .contains("title", query as String) .findAll()}
+            else -> {
+                mRealm.where(Task::class.java)
+                    .contains("title", query as String)
+                    .contains("category.name", cat as String) .findAll() }
         }
         Log.d("hello count", taskResults.size.toString())
         mTaskAdapter.taskList = mRealm.copyFromRealm(taskResults.sort("date"))
         mTaskAdapter.notifyDataSetChanged()
-
         listView1.adapter = mTaskAdapter
     }
 
@@ -193,6 +191,4 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter.notifyDataSetChanged()
     }
 }
-
-
 
